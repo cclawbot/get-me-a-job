@@ -256,7 +256,7 @@ router.get('/:id/pdf', async (req, res) => {
 
     res.contentType('application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="resume-${resume.jobTitle.replace(/\s+/g, '-')}.pdf"`);
-    res.send(pdf);
+    res.end(pdf, 'binary');
   } catch (error) {
     console.error('Error generating PDF:', error);
     res.status(500).json({ error: 'Failed to generate PDF' });
