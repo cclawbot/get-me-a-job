@@ -151,7 +151,6 @@ router.post('/tailor', async (req, res) => {
 3. Generate a tailored resume that emphasizes relevant experience
 4. Optimize for ATS by incorporating keywords naturally
 5. Use strong action verbs and quantifiable achievements
-6. PROVIDE DETAILED CHANGE REASONING - explain WHY each change was made and cite the JD
 
 CRITICAL WRITING STYLE RULES - AVOID AI SLOP:
 - Write like a real person, not a robot
@@ -178,18 +177,26 @@ ${JSON.stringify(storiesContext, null, 2)}
 
 Please tailor this candidate's resume for the job description above.
 
-Return a JSON object with:
-- keywords: array of key skills/terms from JD
-- summary: tailored professional summary (2-3 sentences, NATURAL TONE)
-- summaryReasoning: explanation of why the summary was written this way, with direct JD quotes
-- experiences: array of work experiences with tailored bullet points (HUMAN-SOUNDING)
-- experienceChanges: array of objects explaining each change, format: { experienceIndex: number, bulletIndex: number, original: string, tailored: string, reasoning: string, jdQuote: string }
-- matchedStories: array of story IDs that best match this job
-- atsScore: estimated ATS match score (0-100)
+Return a JSON object with this exact structure:
+{
+  "keywords": ["skill1", "skill2"],
+  "summary": "tailored professional summary (2-3 sentences, NATURAL TONE)",
+  "summaryReasoning": "brief explanation with JD quote",
+  "experiences": [
+    {
+      "company": "Company Name",
+      "title": "Job Title",
+      "startDate": "YYYY-MM",
+      "endDate": "YYYY-MM or Present",
+      "bullets": ["achievement 1", "achievement 2"]
+    }
+  ],
+  "tailoringNotes": "Brief overview of key changes made and why (2-3 sentences with JD quotes)",
+  "matchedStories": [1, 2, 3],
+  "atsScore": 85
+}
 
-IMPORTANT: For experienceChanges, compare the ORIGINAL experience bullets from the candidate profile with the TAILORED bullets you create. Include the exact original text, the new tailored text, reasoning for the change, and the relevant quote from the JD that motivated it.
-
-Return ONLY valid JSON, no other text.`;
+Return ONLY valid JSON, no markdown formatting, no code blocks, no extra text.`;
 
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-5',
@@ -205,10 +212,13 @@ Return ONLY valid JSON, no other text.`;
     // Extract JSON from response (might be wrapped in markdown code blocks)
     let jsonText = textContent.text.trim();
     
+    console.log('🔍 Raw AI response (first 200 chars):', jsonText.substring(0, 200));
+    
     // Try to extract JSON from code blocks
     const jsonMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
     if (jsonMatch) {
       jsonText = jsonMatch[1].trim();
+      console.log('✅ Extracted from code block');
     } else {
       // Remove leading/trailing backticks if present
       jsonText = jsonText.replace(/^`+|`+$/g, '').trim();
@@ -219,7 +229,10 @@ Return ONLY valid JSON, no other text.`;
     const jsonEnd = jsonText.lastIndexOf('}');
     if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
       jsonText = jsonText.substring(jsonStart, jsonEnd + 1);
+      console.log('✅ Extracted JSON boundaries');
     }
+    
+    console.log('🔍 Final JSON (first 200 chars):', jsonText.substring(0, 200));
 
     const tailoredContent = JSON.parse(jsonText);
 

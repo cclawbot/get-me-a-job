@@ -1,14 +1,5 @@
 import './ResumeComparison.css';
 
-interface ExperienceChange {
-  experienceIndex: number;
-  bulletIndex: number;
-  original: string;
-  tailored: string;
-  reasoning: string;
-  jdQuote: string;
-}
-
 interface ComparisonProps {
   originalProfile: {
     summary?: string;
@@ -24,6 +15,7 @@ interface ComparisonProps {
   tailoredResume: {
     summary: string;
     summaryReasoning?: string;
+    tailoringNotes?: string;
     experiences: Array<{
       company: string;
       title: string;
@@ -32,7 +24,6 @@ interface ComparisonProps {
       endDate?: string;
       bullets: string[];
     }>;
-    experienceChanges?: ExperienceChange[];
   };
 }
 
@@ -90,9 +81,6 @@ function ResumeComparison({ originalProfile, tailoredResume }: ComparisonProps) 
           
           {tailoredResume.experiences.map((tailoredExp, expIndex) => {
             const originalExp = originalProfile.experiences?.[expIndex];
-            const changesForExp = tailoredResume.experienceChanges?.filter(
-              (change) => change.experienceIndex === expIndex
-            ) || [];
 
             return (
               <div key={expIndex} className="experience-comparison">
@@ -103,57 +91,47 @@ function ResumeComparison({ originalProfile, tailoredResume }: ComparisonProps) 
                   </span>
                 </div>
 
-                {changesForExp.length > 0 ? (
-                  <div className="bullets-comparison">
-                    {changesForExp.map((change, idx) => (
-                      <div key={idx} className="bullet-change">
-                        <div className="comparison-grid">
-                          <div className="comparison-column original">
-                            {idx === 0 && (
-                              <div className="column-header">
-                                <span className="column-badge">Original</span>
-                              </div>
-                            )}
-                            <div className="bullet-box removed">
-                              <div className="diff-marker">−</div>
-                              <div className="bullet-content">{change.original}</div>
-                            </div>
-                          </div>
-
-                          <div className="comparison-column tailored">
-                            {idx === 0 && (
-                              <div className="column-header">
-                                <span className="column-badge">Tailored</span>
-                              </div>
-                            )}
-                            <div className="bullet-box added">
-                              <div className="diff-marker">+</div>
-                              <div className="bullet-content">{change.tailored}</div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="reasoning-box">
-                          <div className="reasoning-label">💡 Why this change?</div>
-                          <p className="reasoning-text">{change.reasoning}</p>
-                          {change.jdQuote && (
-                            <div className="jd-quote">
-                              <div className="quote-label">📋 From Job Description:</div>
-                              <blockquote>"{change.jdQuote}"</blockquote>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                <div className="comparison-grid">
+                  <div className="comparison-column original">
+                    <div className="column-header">
+                      <span className="column-badge">Original</span>
+                    </div>
+                    <div className="content-box">
+                      {originalExp?.description ? (
+                        <p>{originalExp.description}</p>
+                      ) : (
+                        <p className="empty-state">No original description</p>
+                      )}
+                    </div>
                   </div>
-                ) : (
-                  <div className="no-changes-notice">
-                    ✓ No changes needed for this experience
+
+                  <div className="comparison-column tailored">
+                    <div className="column-header">
+                      <span className="column-badge">Tailored</span>
+                    </div>
+                    <div className="content-box">
+                      {tailoredExp.bullets && tailoredExp.bullets.length > 0 ? (
+                        <ul className="bullet-list">
+                          {tailoredExp.bullets.map((bullet, idx) => (
+                            <li key={idx}>{bullet}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="empty-state">No tailored bullets</p>
+                      )}
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
             );
           })}
+          
+          {tailoredResume.tailoringNotes && (
+            <div className="reasoning-box" style={{ marginTop: '1.5rem' }}>
+              <div className="reasoning-label">💡 Overall Tailoring Strategy</div>
+              <p className="reasoning-text">{tailoredResume.tailoringNotes}</p>
+            </div>
+          )}
         </div>
       )}
     </div>

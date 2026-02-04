@@ -4,20 +4,12 @@ import { getSelectedAIModel } from '../utils/aiModel';
 import ResumeComparison from '../components/ResumeComparison';
 import './TailorResumePage.css';
 
-interface ExperienceChange {
-  experienceIndex: number;
-  bulletIndex: number;
-  original: string;
-  tailored: string;
-  reasoning: string;
-  jdQuote: string;
-}
-
 interface TailoredResume {
   id?: number;
   keywords: string[];
   summary: string;
   summaryReasoning?: string;
+  tailoringNotes?: string;
   experiences: Array<{
     company: string;
     title: string;
@@ -26,7 +18,6 @@ interface TailoredResume {
     endDate?: string;
     bullets: string[];
   }>;
-  experienceChanges?: ExperienceChange[];
   matchedStories?: number[];
   atsScore?: number;
   profile?: {
@@ -282,8 +273,8 @@ function TailorResumePage() {
               tailoredResume={{
                 summary: tailoredResume.summary,
                 summaryReasoning: tailoredResume.summaryReasoning,
+                tailoringNotes: tailoredResume.tailoringNotes,
                 experiences: tailoredResume.experiences,
-                experienceChanges: tailoredResume.experienceChanges,
               }}
             />
           )}
