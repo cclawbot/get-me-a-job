@@ -108,7 +108,7 @@ function ResumesListPage() {
         <div className="resumes-grid">
           {resumes.map((resume) => (
             <div key={resume.id} className="resume-card">
-              <div className="resume-card-header">
+              <div className="resume-card-content">
                 <div className="resume-icon">📄</div>
                 <div className="resume-info">
                   <h3>{resume.jobTitle}</h3>
@@ -121,14 +121,14 @@ function ResumesListPage() {
                   onClick={() => handleDownloadPDF(resume.id, resume.jobTitle)}
                   className="btn-download"
                 >
-                  📥 Download PDF
+                  Download PDF
                 </button>
                 <button 
                   onClick={() => handleDeleteClick(resume.id)}
                   className="btn-delete"
                   title="Delete resume"
                 >
-                  🗑️ Delete
+                  Delete
                 </button>
               </div>
             </div>

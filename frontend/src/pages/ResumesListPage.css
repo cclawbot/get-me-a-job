@@ -13,88 +13,111 @@
 
 .resume-card {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   padding: 1.5rem;
   transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  border: 1px solid #e8ecef;
 }
 
 .resume-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  border-color: #3498db;
 }
 
-.resume-card-header {
+.resume-card-content {
   display: flex;
   gap: 1rem;
   margin-bottom: 1.5rem;
+  flex: 1;
 }
 
 .resume-icon {
-  font-size: 2.5rem;
+  font-size: 3rem;
   line-height: 1;
+  opacity: 0.9;
 }
 
 .resume-info {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .resume-info h3 {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   color: #2c3e50;
-  margin-bottom: 0.25rem;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 .resume-info .company {
   color: #3498db;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
 }
 
 .resume-info .date {
-  color: #7f8c8d;
-  font-size: 0.9rem;
+  color: #95a5a6;
+  font-size: 0.875rem;
+  margin-top: auto;
 }
 
 .resume-card-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  margin-top: auto;
 }
 
 .btn-download {
-  flex: 1;
+  flex: 2;
   background: #3498db;
   color: white;
   border: none;
-  padding: 0.75rem 1rem;
-  border-radius: 4px;
+  padding: 0.875rem 1.25rem;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  transition: background 0.2s;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
 }
 
 .btn-download:hover {
   background: #2980b9;
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+  transform: translateY(-1px);
 }
 
 .btn-delete {
-  background: #e74c3c;
-  color: white;
-  border: none;
-  padding: 0.75rem 1rem;
-  border-radius: 4px;
+  flex: 1;
+  background: white;
+  color: #e74c3c;
+  border: 2px solid #e74c3c;
+  padding: 0.875rem 1.25rem;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  transition: background 0.2s;
+  font-size: 0.95rem;
+  transition: all 0.2s;
 }
 
 .btn-delete:hover {
-  background: #c0392b;
+  background: #e74c3c;
+  color: white;
+  transform: translateY(-1px);
 }
 
 .btn-delete:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* Modal Styles */
@@ -242,27 +265,30 @@
   }
   
   .resume-card {
-    padding: 1.25rem 1rem;
+    padding: 1.25rem;
+  }
+  
+  .resume-card-content {
+    gap: 0.875rem;
+    margin-bottom: 1.25rem;
   }
   
   .resume-icon {
-    font-size: 2rem;
+    font-size: 2.5rem;
   }
   
   .resume-info h3 {
-    font-size: 1.1rem;
+    font-size: 1.125rem;
   }
   
   .resume-card-actions {
-    gap: 0.5rem;
+    gap: 0.625rem;
   }
   
-  .btn-download {
-    flex: 2;
-  }
-  
+  .btn-download,
   .btn-delete {
-    flex: 1;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
   }
   
   .modal-content {
@@ -297,26 +323,37 @@
   }
   
   .resume-card {
-    padding: 1rem 0.75rem;
+    padding: 1rem;
   }
   
-  .resume-card-header {
+  .resume-card-content {
     gap: 0.75rem;
+    margin-bottom: 1rem;
   }
   
   .resume-icon {
-    font-size: 1.75rem;
+    font-size: 2.25rem;
   }
   
   .resume-info h3 {
-    font-size: 1rem;
+    font-size: 1.05rem;
   }
   
   .resume-info .company {
-    font-size: 0.9rem;
+    font-size: 0.875rem;
   }
   
   .resume-info .date {
+    font-size: 0.8rem;
+  }
+  
+  .resume-card-actions {
+    gap: 0.5rem;
+  }
+  
+  .btn-download,
+  .btn-delete {
+    padding: 0.625rem 0.875rem;
     font-size: 0.85rem;
   }
   
