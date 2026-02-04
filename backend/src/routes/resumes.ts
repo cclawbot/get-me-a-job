@@ -58,6 +58,33 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// Delete resume
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const resumeId = parseInt(id);
+
+    // Check if resume exists
+    const resume = await prisma.tailoredResume.findUnique({
+      where: { id: resumeId },
+    });
+
+    if (!resume) {
+      return res.status(404).json({ error: 'Resume not found' });
+    }
+
+    // Delete the resume
+    await prisma.tailoredResume.delete({
+      where: { id: resumeId },
+    });
+
+    res.json({ message: 'Resume deleted successfully', id: resumeId });
+  } catch (error) {
+    console.error('Error deleting resume:', error);
+    res.status(500).json({ error: 'Failed to delete resume' });
+  }
+});
+
 // Tailor resume based on job description
 router.post('/tailor', async (req, res) => {
   try {
