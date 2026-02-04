@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ResumeParserModal from '../components/ResumeParserModal';
 import './ProfilePage.css';
 
 interface WorkExperience {
@@ -30,6 +31,7 @@ interface Certification {
 function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showParserModal, setShowParserModal] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -161,12 +163,37 @@ function ProfilePage() {
     setCertifications(certifications.filter((_, i) => i !== index));
   };
 
+  const handleParsedResume = (data: any) => {
+    // Populate all fields with parsed data
+    setName(data.name || '');
+    setEmail(data.email || '');
+    setPhone(data.phone || '');
+    setSummary(data.summary || '');
+    setSkills(data.skills || []);
+    setExperiences(data.experiences || []);
+    setEducations(data.educations || []);
+    setCertifications(data.certifications || []);
+    
+    alert('✅ Resume parsed successfully! Review the information and click Save.');
+  };
+
   if (loading) return <div className="loading">Loading profile...</div>;
 
   return (
     <div className="profile-page">
-      <h1>Build Your Profile</h1>
-      <p className="subtitle">Complete your profile to get started with resume tailoring</p>
+      <div className="page-header">
+        <div>
+          <h1>Build Your Profile</h1>
+          <p className="subtitle">Complete your profile to get started with resume tailoring</p>
+        </div>
+        <button 
+          className="btn-primary" 
+          onClick={() => setShowParserModal(true)}
+          style={{ whiteSpace: 'nowrap' }}
+        >
+          🤖 Import Resume with AI
+        </button>
+      </div>
 
       <div className="profile-form">
         <section className="form-section">
@@ -403,6 +430,13 @@ function ProfilePage() {
           </button>
         </div>
       </div>
+
+      {showParserModal && (
+        <ResumeParserModal
+          onClose={() => setShowParserModal(false)}
+          onDataParsed={handleParsedResume}
+        />
+      )}
     </div>
   );
 }

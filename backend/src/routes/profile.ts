@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { parseResume } from '../services/ai';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -125,3 +126,26 @@ router.post('/', async (req, res) => {
 });
 
 export default router;
+
+// Parse resume with AI
+router.post('/parse-resume', async (req, res) => {
+  try {
+    const { resumeText } = req.body;
+
+    if (!resumeText || typeof resumeText !== 'string') {
+      return res.status(400).json({ error: 'Resume text is required' });
+    }
+
+    console.log('Parsing resume with AI...');
+    const parsedData = await parseResume(resumeText);
+    console.log('Resume parsed successfully');
+
+    res.json(parsedData);
+  } catch (error) {
+    console.error('Error parsing resume:', error);
+    res.status(500).json({ 
+      error: 'Failed to parse resume', 
+      details: error instanceof Error ? error.message : 'Unknown error' 
+    });
+  }
+});

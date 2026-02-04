@@ -1,0 +1,164 @@
+.script-modal .modal-content {
+  max-width: 800px;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 1.5rem;
+  border: 4px solid #ecf0f1;
+  border-top-color: #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  color: #7f8c8d;
+  font-size: 1.1rem;
+}
+
+.script-content {
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.script-section {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.script-section h3 {
+  color: #2c3e50;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.script-text {
+  color: #34495e;
+  line-height: 1.8;
+  font-size: 1rem;
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  border-left: 4px solid #3498db;
+}
+
+.key-points-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.key-points-list li {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+  border-left: 4px solid #27ae60;
+  color: #34495e;
+  line-height: 1.6;
+}
+
+.key-points-list li:last-child {
+  margin-bottom: 0;
+}
+
+.practice-questions {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.practice-questions h3 {
+  color: white;
+}
+
+.practice-intro {
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.questions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.questions-list li {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  color: white;
+  line-height: 1.5;
+  backdrop-filter: blur(10px);
+}
+
+.questions-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .script-section {
+    padding: 1.25rem;
+  }
+  
+  .script-section h3 {
+    font-size: 1rem;
+  }
+  
+  .script-text,
+  .key-points-list li {
+    padding: 0.85rem;
+    font-size: 0.95rem;
+  }
+  
+  .questions-list li {
+    padding: 0.65rem 0.85rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .script-section {
+    padding: 1rem;
+  }
+  
+  .script-section h3 {
+    font-size: 0.95rem;
+  }
+  
+  .script-text,
+  .key-points-list li {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  .loading-state {
+    padding: 2rem 1rem;
+  }
+  
+  .spinner {
+    width: 40px;
+    height: 40px;
+  }
+}

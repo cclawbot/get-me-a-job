@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { generateStory, optimizeStory, storyToScript } from '../services/ai';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -88,3 +89,72 @@ router.delete('/:id', async (req, res) => {
 });
 
 export default router;
+
+// AI: Generate story from notes
+router.post('/generate', async (req, res) => {
+  try {
+    const { notes } = req.body;
+
+    if (!notes || typeof notes !== 'string') {
+      return res.status(400).json({ error: 'Notes are required' });
+    }
+
+    console.log('Generating story with AI...');
+    const generatedStory = await generateStory(notes);
+    console.log('Story generated successfully');
+
+    res.json(generatedStory);
+  } catch (error) {
+    console.error('Error generating story:', error);
+    res.status(500).json({ 
+      error: 'Failed to generate story', 
+      details: error instanceof Error ? error.message : 'Unknown error' 
+    });
+  }
+});
+
+// AI: Optimize existing story
+router.post('/optimize', async (req, res) => {
+  try {
+    const { title, situation, task, action, result, metrics } = req.body;
+
+    if (!title || !situation || !task || !action || !result) {
+      return res.status(400).json({ error: 'All STAR fields are required' });
+    }
+
+    console.log('Optimizing story with AI...');
+    const optimized = await optimizeStory({ title, situation, task, action, result, metrics });
+    console.log('Story optimized successfully');
+
+    res.json(optimized);
+  } catch (error) {
+    console.error('Error optimizing story:', error);
+    res.status(500).json({ 
+      error: 'Failed to optimize story', 
+      details: error instanceof Error ? error.message : 'Unknown error' 
+    });
+  }
+});
+
+// AI: Convert story to interview script
+router.post('/to-script', async (req, res) => {
+  try {
+    const { title, situation, task, action, result, metrics } = req.body;
+
+    if (!title || !situation || !task || !action || !result) {
+      return res.status(400).json({ error: 'All STAR fields are required' });
+    }
+
+    console.log('Converting story to interview script...');
+    const script = await storyToScript({ title, situation, task, action, result, metrics });
+    console.log('Script generated successfully');
+
+    res.json(script);
+  } catch (error) {
+    console.error('Error generating interview script:', error);
+    res.status(500).json({ 
+      error: 'Failed to generate interview script', 
+      details: error instanceof Error ? error.message : 'Unknown error' 
+    });
+  }
+});

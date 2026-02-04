@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import StoryGeneratorModal from '../components/StoryGeneratorModal';
+import InterviewScriptModal from '../components/InterviewScriptModal';
 import './StoryBankPage.css';
 
 interface Story {
@@ -17,6 +19,10 @@ function StoryBankPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [showGeneratorModal, setShowGeneratorModal] = useState(false);
+  const [showScriptModal, setShowScriptModal] = useState(false);
+  const [selectedStoryForScript, setSelectedStoryForScript] = useState<Story | null>(null);
+  const [optimizing, setOptimizing] = useState(false);
   
   const [title, setTitle] = useState('');
   const [situation, setSituation] = useState('');
@@ -139,6 +145,58 @@ function StoryBankPage() {
     setTags(tags.filter(t => t !== tag));
   };
 
+  const handleGeneratedStory = (generatedStory: any) => {
+    setTitle(generatedStory.title);
+    setSituation(generatedStory.situation);
+    setTask(generatedStory.task);
+    setAction(generatedStory.action);
+    setResult(generatedStory.result);
+    setMetrics(generatedStory.metrics || '');
+    setTags(generatedStory.tags || []);
+    setShowForm(true);
+    alert('✅ Story generated! Review and click Save when ready.');
+  };
+
+  const handleOptimizeStory = async () => {
+    if (!title || !situation || !task || !action || !result) {
+      alert('Please fill in all STAR fields before optimizing');
+      return;
+    }
+
+    setOptimizing(true);
+    try {
+      const res = await fetch('http://localhost:3001/api/stories/optimize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, situation, task, action, result, metrics }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to optimize story');
+      }
+
+      const optimized = await res.json();
+      setTitle(optimized.title);
+      setSituation(optimized.situation);
+      setTask(optimized.task);
+      setAction(optimized.action);
+      setResult(optimized.result);
+      setMetrics(optimized.metrics || '');
+      setTags(optimized.tags || []);
+      alert('✨ Story optimized! Review the improvements.');
+    } catch (error) {
+      console.error('Optimization error:', error);
+      alert('Failed to optimize story');
+    } finally {
+      setOptimizing(false);
+    }
+  };
+
+  const handleViewScript = (story: Story) => {
+    setSelectedStoryForScript(story);
+    setShowScriptModal(true);
+  };
+
   if (loading) return <div className="loading">Loading stories...</div>;
 
   return (
@@ -148,12 +206,20 @@ function StoryBankPage() {
           <h1>Your Story Bank</h1>
           <p className="subtitle">Build a library of achievements using the STAR method</p>
         </div>
-        <button 
-          onClick={() => setShowForm(!showForm)} 
-          className="btn-primary"
-        >
-          {showForm ? 'Cancel' : '+ Add Story'}
-        </button>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <button 
+            onClick={() => setShowGeneratorModal(true)} 
+            className="btn-primary"
+          >
+            ✨ AI Generate Story
+          </button>
+          <button 
+            onClick={() => setShowForm(!showForm)} 
+            className="btn-secondary"
+          >
+            {showForm ? 'Cancel' : '+ Add Manually'}
+          </button>
+        </div>
       </div>
 
       {showForm && (
@@ -245,6 +311,13 @@ function StoryBankPage() {
 
           <div className="form-actions">
             <button onClick={resetForm} className="btn-secondary">Cancel</button>
+            <button 
+              onClick={handleOptimizeStory} 
+              className="btn-secondary"
+              disabled={optimizing || !title || !situation || !task || !action || !result}
+            >
+              {optimizing ? '✨ Optimizing...' : '🤖 Optimize with AI'}
+            </button>
             <button onClick={handleSubmit} className="btn-primary">
               {editingId ? 'Update Story' : 'Save Story'}
             </button>
@@ -294,10 +367,55 @@ function StoryBankPage() {
                   <span key={i} className="tag">{tag}</span>
                 ))}
               </div>
+
+              <button 
+                onClick={() => handleViewScript(story)}
+                className="btn-script"
+                style={{ 
+                  width: '100%', 
+                  marginTop: '1rem',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.75rem',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  transition: 'transform 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+              >
+                🎯 View Interview Script
+              </button>
             </div>
           ))
         )}
       </div>
+
+      {showGeneratorModal && (
+        <StoryGeneratorModal
+          onClose={() => setShowGeneratorModal(false)}
+          onStoryGenerated={handleGeneratedStory}
+        />
+      )}
+
+      {showScriptModal && selectedStoryForScript && (
+        <InterviewScriptModal
+          onClose={() => {
+            setShowScriptModal(false);
+            setSelectedStoryForScript(null);
+          }}
+          story={{
+            title: selectedStoryForScript.title,
+            situation: selectedStoryForScript.situation,
+            task: selectedStoryForScript.task,
+            action: selectedStoryForScript.action,
+            result: selectedStoryForScript.result,
+            metrics: selectedStoryForScript.metrics,
+          }}
+        />
+      )}
     </div>
   );
 }
