@@ -28,6 +28,15 @@ interface Certification {
   url?: string;
 }
 
+interface Reference {
+  name: string;
+  title: string;
+  company?: string;
+  email?: string;
+  phone?: string;
+  relationship?: string;
+}
+
 function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -41,6 +50,7 @@ function ProfilePage() {
   const [experiences, setExperiences] = useState<WorkExperience[]>([]);
   const [educations, setEducations] = useState<Education[]>([]);
   const [certifications, setCertifications] = useState<Certification[]>([]);
+  const [references, setReferences] = useState<Reference[]>([]);
 
   useEffect(() => {
     fetchProfile();
@@ -59,6 +69,7 @@ function ProfilePage() {
       setExperiences(data.experiences || []);
       setEducations(data.educations || []);
       setCertifications(data.certifications || []);
+      setReferences(data.references || []);
     } catch (error) {
       console.error('Failed to fetch profile:', error);
     } finally {
@@ -81,6 +92,7 @@ function ProfilePage() {
           experiences,
           educations,
           certifications,
+          references,
         }),
       });
       
@@ -161,6 +173,23 @@ function ProfilePage() {
 
   const removeCertification = (index: number) => {
     setCertifications(certifications.filter((_, i) => i !== index));
+  };
+
+  const addReference = () => {
+    setReferences([...references, {
+      name: '',
+      title: '',
+    }]);
+  };
+
+  const updateReference = (index: number, field: string, value: any) => {
+    const updated = [...references];
+    updated[index] = { ...updated[index], [field]: value };
+    setReferences(updated);
+  };
+
+  const removeReference = (index: number) => {
+    setReferences(references.filter((_, i) => i !== index));
   };
 
   const handleParsedResume = (data: any) => {
@@ -427,6 +456,73 @@ function ProfilePage() {
                     value={cert.date || ''}
                     onChange={(e) => updateCertification(i, 'date', e.target.value)}
                     placeholder="Jan 2023"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </section>
+
+        <section className="form-section">
+          <div className="section-header">
+            <h2>References</h2>
+            <button onClick={addReference} className="btn-secondary">+ Add Reference</button>
+          </div>
+          {references.map((ref, i) => (
+            <div key={i} className="item-card">
+              <div className="card-header">
+                <h3>Reference {i + 1}</h3>
+                <button onClick={() => removeReference(i)} className="btn-danger-small">Remove</button>
+              </div>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Name *</label>
+                  <input
+                    type="text"
+                    value={ref.name}
+                    onChange={(e) => updateReference(i, 'name', e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Title *</label>
+                  <input
+                    type="text"
+                    value={ref.title}
+                    onChange={(e) => updateReference(i, 'title', e.target.value)}
+                    placeholder="Senior Software Engineer"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Company</label>
+                  <input
+                    type="text"
+                    value={ref.company || ''}
+                    onChange={(e) => updateReference(i, 'company', e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Relationship</label>
+                  <input
+                    type="text"
+                    value={ref.relationship || ''}
+                    onChange={(e) => updateReference(i, 'relationship', e.target.value)}
+                    placeholder="Former Manager, Colleague, Client"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    value={ref.email || ''}
+                    onChange={(e) => updateReference(i, 'email', e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Phone</label>
+                  <input
+                    type="text"
+                    value={ref.phone || ''}
+                    onChange={(e) => updateReference(i, 'phone', e.target.value)}
                   />
                 </div>
               </div>

@@ -15,6 +15,7 @@ router.get('/', async (req, res) => {
         experiences: { orderBy: { startDate: 'desc' } },
         educations: { orderBy: { endDate: 'desc' } },
         certifications: { orderBy: { date: 'desc' } },
+        references: { orderBy: { createdAt: 'asc' } },
       },
     });
 
@@ -29,6 +30,7 @@ router.get('/', async (req, res) => {
           experiences: true,
           educations: true,
           certifications: true,
+          references: true,
         },
       });
     }
@@ -44,7 +46,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const userId = 'default';
-    const { name, email, phone, summary, skills, experiences, educations, certifications } = req.body;
+    const { name, email, phone, summary, skills, experiences, educations, certifications, references } = req.body;
 
     // Update or create profile
     let profile = await prisma.profile.findUnique({ where: { userId } });
@@ -77,6 +79,7 @@ router.post('/', async (req, res) => {
     await prisma.workExperience.deleteMany({ where: { profileId: profile.id } });
     await prisma.education.deleteMany({ where: { profileId: profile.id } });
     await prisma.certification.deleteMany({ where: { profileId: profile.id } });
+    await prisma.reference.deleteMany({ where: { profileId: profile.id } });
 
     // Create new experiences
     if (experiences && experiences.length > 0) {
@@ -108,6 +111,16 @@ router.post('/', async (req, res) => {
       });
     }
 
+    // Create new references
+    if (references && references.length > 0) {
+      await prisma.reference.createMany({
+        data: references.map((ref: any) => ({
+          ...ref,
+          profileId: profile!.id,
+        })),
+      });
+    }
+
     // Fetch updated profile with all relations
     const updatedProfile = await prisma.profile.findUnique({
       where: { userId },
@@ -115,6 +128,7 @@ router.post('/', async (req, res) => {
         experiences: { orderBy: { startDate: 'desc' } },
         educations: { orderBy: { endDate: 'desc' } },
         certifications: { orderBy: { date: 'desc' } },
+        references: { orderBy: { createdAt: 'asc' } },
       },
     });
 

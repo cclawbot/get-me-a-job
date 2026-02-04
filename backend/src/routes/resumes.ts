@@ -251,6 +251,7 @@ router.get('/:id/pdf', async (req, res) => {
         experiences: { orderBy: { startDate: 'desc' } },
         educations: { orderBy: { endDate: 'desc' } },
         certifications: { orderBy: { date: 'desc' } },
+        references: { orderBy: { createdAt: 'asc' } },
       },
     });
 
@@ -448,6 +449,19 @@ function generateResumeHTML(profile: any, content: any, skills: string[]): strin
     <div class="section-title">Certifications</div>
     ${profile.certifications.map((cert: any) => `
       <div>${cert.name} - ${cert.issuer}${cert.date ? ' (' + cert.date + ')' : ''}</div>
+    `).join('')}
+  </div>
+  ` : ''}
+
+  ${profile?.references && profile.references.length > 0 ? `
+  <div class="section">
+    <div class="section-title">References</div>
+    ${profile.references.map((ref: any) => `
+      <div class="education-item" style="margin-bottom: 10px;">
+        <div class="degree">${ref.name}${ref.relationship ? ' (' + ref.relationship + ')' : ''}</div>
+        <div>${ref.title}${ref.company ? ' at ' + ref.company : ''}</div>
+        ${ref.email || ref.phone ? `<div class="date">${ref.email ? ref.email : ''}${ref.email && ref.phone ? ' • ' : ''}${ref.phone ? ref.phone : ''}</div>` : ''}
+      </div>
     `).join('')}
   </div>
   ` : ''}

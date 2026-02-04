@@ -42,6 +42,7 @@ model Profile {
   experiences   WorkExperience[]
   educations    Education[]
   certifications Certification[]
+  references    Reference[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
@@ -83,6 +84,20 @@ model Certification {
   issuer      String
   date        String?
   url         String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Reference {
+  id          Int      @id @default(autoincrement())
+  profileId   Int
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  name        String
+  title       String
+  company     String?
+  email       String?
+  phone       String?
+  relationship String?  // e.g., "Former Manager", "Colleague", "Client"
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
