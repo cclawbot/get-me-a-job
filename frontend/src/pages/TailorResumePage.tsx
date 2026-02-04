@@ -17,7 +17,15 @@ interface TailoredResume {
   }>;
   matchedStories?: number[];
   atsScore?: number;
-  profile?: any;
+  profile?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    skills: string[]; // Already parsed array from backend
+    experiences?: any[];
+    educations?: any[];
+    certifications?: any[];
+  };
 }
 
 function TailorResumePage() {
@@ -267,11 +275,11 @@ function TailorResumePage() {
               </div>
             )}
 
-            {tailoredResume.profile?.skills && JSON.parse(tailoredResume.profile.skills).length > 0 && (
+            {tailoredResume.profile?.skills && Array.isArray(tailoredResume.profile.skills) && tailoredResume.profile.skills.length > 0 && (
               <div className="resume-section">
                 <h2>Skills</h2>
                 <div className="skills-list">
-                  {JSON.parse(tailoredResume.profile.skills).map((skill: string, i: number) => (
+                  {tailoredResume.profile.skills.map((skill: string, i: number) => (
                     <span key={i} className="skill-badge">{skill}</span>
                   ))}
                 </div>
