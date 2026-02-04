@@ -326,6 +326,16 @@ function ProfilePage() {
                   </label>
                 </div>
               </div>
+              <div className="form-group">
+                <label>Description / Key Achievements</label>
+                <textarea
+                  value={exp.description || ''}
+                  onChange={(e) => updateExperience(i, 'description', e.target.value)}
+                  placeholder="• Lead end-to-end requirements delivery for complex banking platforms&#10;• Translate business needs into detailed technical requirements&#10;• Partner closely with solution architects and engineers&#10;• Facilitate workshops with senior stakeholders"
+                  rows={6}
+                  style={{ fontFamily: 'monospace', fontSize: '0.9em' }}
+                />
+              </div>
             </div>
           ))}
         </section>

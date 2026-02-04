@@ -4,7 +4,7 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-const MODEL = 'claude-3-5-sonnet-20241022';
+const MODEL = 'claude-sonnet-4-5';
 
 export interface ParsedResume {
   name: string;
@@ -58,7 +58,7 @@ Return a JSON object with this exact structure:
       "startDate": "Jan 2020",
       "endDate": "Dec 2022",
       "current": false,
-      "description": "Brief description or key achievements"
+      "description": "Full description with bullet points exactly as they appear in the resume. Include all responsibilities, achievements, and details. Preserve formatting with bullet points (•) or dashes (-). This is the complete role description."
     }
   ],
   "educations": [
@@ -86,6 +86,8 @@ Important:
 - If information is missing, use empty string or empty array
 - For current positions, set "current": true and "endDate": ""
 - Parse dates into readable format (e.g., "Jan 2020", "2020-2022")
+- For experience descriptions, extract the COMPLETE text including ALL bullet points, responsibilities, and achievements. Don't summarize - capture everything.
+- Preserve bullet point formatting using • or - characters
 - Return ONLY valid JSON, no other text`;
 
   const message = await anthropic.messages.create({
