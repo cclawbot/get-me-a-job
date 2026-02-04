@@ -17,6 +17,7 @@ interface TailoredResume {
     startDate: string;
     endDate?: string;
     bullets: string[];
+    reasoning?: string;
   }>;
   matchedStories?: number[];
   atsScore?: number;

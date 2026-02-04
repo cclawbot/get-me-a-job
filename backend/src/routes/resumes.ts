@@ -181,20 +181,28 @@ Return a JSON object with this exact structure:
 {
   "keywords": ["skill1", "skill2"],
   "summary": "tailored professional summary (2-3 sentences, NATURAL TONE)",
-  "summaryReasoning": "brief explanation with JD quote",
+  "summaryReasoning": "CONCISE explanation. Sacrifice grammar for brevity. Use bullets if possible.",
   "experiences": [
     {
       "company": "Company Name",
       "title": "Job Title",
       "startDate": "YYYY-MM",
       "endDate": "YYYY-MM or Present",
-      "bullets": ["achievement 1", "achievement 2"]
+      "bullets": ["achievement 1", "achievement 2"],
+      "reasoning": "CONCISE explanation why this experience was tailored this way. Use bullets. Include JD quotes."
     }
   ],
-  "tailoringNotes": "Brief overview of key changes made and why (2-3 sentences with JD quotes)",
+  "tailoringNotes": "CONCISE overview of key changes. Use bullets. Include JD quotes.",
   "matchedStories": [1, 2, 3],
   "atsScore": 85
 }
+
+IMPORTANT FOR REASONING FIELDS:
+- Be concise, sacrifice grammar for brevity
+- Use bullet points (• or -) to list key points
+- Keep each bullet to 1 short line
+- Include direct JD quotes in "quotes"
+- Example format: "• Emphasized [skill] per JD: 'quote from JD'\n• Added metrics to show impact\n• Removed irrelevant details"
 
 Return ONLY valid JSON, no markdown formatting, no code blocks, no extra text.`;
 

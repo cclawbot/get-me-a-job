@@ -23,6 +23,7 @@ interface ComparisonProps {
       startDate: string;
       endDate?: string;
       bullets: string[];
+      reasoning?: string;
     }>;
   };
 }
@@ -122,6 +123,15 @@ function ResumeComparison({ originalProfile, tailoredResume }: ComparisonProps) 
                     </div>
                   </div>
                 </div>
+
+                {tailoredExp.reasoning && (
+                  <div className="reasoning-box">
+                    <div className="reasoning-label">💡 Why this change?</div>
+                    <div className="reasoning-text" style={{ whiteSpace: 'pre-line' }}>
+                      {tailoredExp.reasoning}
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
