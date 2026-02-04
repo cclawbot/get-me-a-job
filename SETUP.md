@@ -5,25 +5,22 @@ This MVP allows you to build a profile, create achievement stories using the STA
 
 ## Prerequisites
 - Node.js v25+
-- OpenAI API key (for AI resume tailoring)
+- Anthropic API key (for AI resume tailoring with Claude)
 
 ## Installation
 Already completed! The project is set up with:
-- Backend: Express + Prisma + OpenAI + Puppeteer (port 3001)
+- Backend: Express + Prisma + Anthropic Claude + Puppeteer (port 3001)
 - Frontend: React + TypeScript + React Router (port 5173)
 
 ## Configuration
 
-### OpenAI API Key
-To enable AI-powered resume tailoring, add your OpenAI API key:
-
-1. Open `backend/.env`
-2. Replace `your_openai_api_key_here` with your actual OpenAI API key:
+### Anthropic API Key
+✅ **Already configured!** Your Anthropic API key is set in `backend/.env`:
    ```
-   OPENAI_API_KEY=sk-...your-actual-key...
+   ANTHROPIC_API_KEY=sk-ant-api03-...
    ```
 
-Without an API key, the app will work but the AI tailoring feature will show an error message.
+The app uses **Claude Sonnet 4.5** for AI-powered resume tailoring.
 
 ## Running the App
 
@@ -121,7 +118,7 @@ The resume tailoring process:
 
 ## Next Steps
 
-1. **Add your OpenAI API key** to `backend/.env`
+1. ✅ **API key configured** - Claude is ready to use!
 2. **Build your profile** - Complete all sections
 3. **Create stories** - Add 5-10 achievement stories with different tags
 4. **Tailor your first resume** - Find a job posting and paste the description
@@ -137,14 +134,14 @@ The resume tailoring process:
 
 ## Security Note
 - Single-user MVP (userId: "default")
-- OpenAI API key stored in .env (never commit to git)
+- Anthropic API key stored in .env (never commit to git)
 - For production, add authentication and per-user data isolation
 
 ## Tech Stack
-- **Backend:** Express, Prisma, OpenAI API, Puppeteer
+- **Backend:** Express, Prisma, Anthropic Claude, Puppeteer
 - **Frontend:** React 19, TypeScript, React Router, Vite
 - **Database:** SQLite (Prisma ORM)
-- **AI:** OpenAI GPT-4
+- **AI:** Claude Sonnet 4.5 (Anthropic)
 - **PDF:** Puppeteer
 
 Enjoy building tailored resumes! 🎯

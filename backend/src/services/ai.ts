@@ -4,7 +4,15 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-const MODEL = 'claude-sonnet-4-5';
+// Model options
+export const MODELS = {
+  SONNET: 'claude-sonnet-4-5',
+  HAIKU: 'claude-haiku-4-5',
+} as const;
+
+export type AIModel = typeof MODELS[keyof typeof MODELS];
+
+const DEFAULT_MODEL = MODELS.SONNET;
 
 export interface ParsedResume {
   name: string;
@@ -37,7 +45,7 @@ export interface ParsedResume {
   }>;
 }
 
-export async function parseResume(resumeText: string): Promise<ParsedResume> {
+export async function parseResume(resumeText: string, model: AIModel = DEFAULT_MODEL): Promise<ParsedResume> {
   const prompt = `You are a resume parser. Extract structured information from the following resume text and return it as valid JSON.
 
 Resume text:
@@ -91,7 +99,7 @@ Important:
 - Return ONLY valid JSON, no other text`;
 
   const message = await anthropic.messages.create({
-    model: MODEL,
+    model: model,
     max_tokens: 4096,
     messages: [{ role: 'user', content: prompt }],
   });
@@ -127,7 +135,7 @@ export interface GeneratedStory {
   tags: string[];
 }
 
-export async function generateStory(userNotes: string): Promise<GeneratedStory> {
+export async function generateStory(userNotes: string, model: AIModel = DEFAULT_MODEL): Promise<GeneratedStory> {
   const prompt = `You are an expert career coach helping someone create a compelling STAR story for job interviews.
 
 User's rough notes:
@@ -153,7 +161,7 @@ Return a JSON object with this structure:
 Return ONLY valid JSON, no other text.`;
 
   const message = await anthropic.messages.create({
-    model: MODEL,
+    model: model,
     max_tokens: 2048,
     messages: [{ role: 'user', content: prompt }],
   });
@@ -185,7 +193,7 @@ export async function optimizeStory(story: {
   action: string;
   result: string;
   metrics?: string;
-}): Promise<GeneratedStory> {
+}, model: AIModel = DEFAULT_MODEL): Promise<GeneratedStory> {
   const prompt = `You are an expert career coach. Improve this STAR story to make it more compelling and interview-ready.
 
 Current story:
@@ -217,7 +225,7 @@ Return a JSON object with this structure:
 Return ONLY valid JSON, no other text.`;
 
   const message = await anthropic.messages.create({
-    model: MODEL,
+    model: model,
     max_tokens: 2048,
     messages: [{ role: 'user', content: prompt }],
   });
@@ -249,6 +257,60 @@ export interface InterviewScript {
   practiceQuestions: string[];
 }
 
+export interface ParsedJobDescription {
+  jobTitle: string;
+  company: string;
+  jobDescription: string;
+}
+
+export async function parseJobFromURL(pageContent: string, url: string, model: AIModel = DEFAULT_MODEL): Promise<ParsedJobDescription> {
+  const prompt = `You are a job description parser. Extract the job title, company name, and full job description from the following webpage content.
+
+URL: ${url}
+
+Webpage Content:
+${pageContent.substring(0, 15000)} 
+
+Return a JSON object with this exact structure:
+{
+  "jobTitle": "The job title/position",
+  "company": "The company/organization name",
+  "jobDescription": "The complete job description including responsibilities, requirements, qualifications, etc. Keep all details and formatting."
+}
+
+Important:
+- Extract the COMPLETE job description text, including all sections (responsibilities, requirements, qualifications, benefits, etc.)
+- If the company name is not obvious, look for clues in the content
+- Return ONLY valid JSON, no other text
+
+Return ONLY valid JSON, no markdown or other formatting.`;
+
+  const message = await anthropic.messages.create({
+    model: model,
+    max_tokens: 4096,
+    messages: [{ role: 'user', content: prompt }],
+  });
+
+  const textContent = message.content.find((c) => c.type === 'text');
+  if (!textContent || textContent.type !== 'text') {
+    throw new Error('No text response from AI');
+  }
+
+  let jsonText = textContent.text.trim();
+  const jsonMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  if (jsonMatch) {
+    jsonText = jsonMatch[1];
+  }
+
+  try {
+    const parsed = JSON.parse(jsonText);
+    return parsed as ParsedJobDescription;
+  } catch (error) {
+    console.error('Failed to parse AI response:', jsonText);
+    throw new Error('Failed to parse job description from AI response');
+  }
+}
+
 export async function storyToScript(story: {
   title: string;
   situation: string;
@@ -256,7 +318,7 @@ export async function storyToScript(story: {
   action: string;
   result: string;
   metrics?: string;
-}): Promise<InterviewScript> {
+}, model: AIModel = DEFAULT_MODEL): Promise<InterviewScript> {
   const prompt = `You are an interview coach. Convert this STAR story into a natural, conversational interview script.
 
 Story:
@@ -293,7 +355,7 @@ Return a JSON object:
 Return ONLY valid JSON, no other text.`;
 
   const message = await anthropic.messages.create({
-    model: MODEL,
+    model: model,
     max_tokens: 2048,
     messages: [{ role: 'user', content: prompt }],
   });

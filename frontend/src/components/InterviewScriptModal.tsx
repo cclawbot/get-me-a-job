@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getSelectedAIModel } from '../utils/aiModel';
 import './InterviewScriptModal.css';
 
 interface InterviewScript {
@@ -11,6 +12,7 @@ interface InterviewScript {
 interface InterviewScriptModalProps {
   onClose: () => void;
   story: {
+    id?: number;
     title: string;
     situation: string;
     task: string;
@@ -24,20 +26,40 @@ function InterviewScriptModal({ onClose, story }: InterviewScriptModalProps) {
   const [script, setScript] = useState<InterviewScript | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
   useEffect(() => {
-    generateScript();
+    generateScript(false);
   }, []);
 
-  const generateScript = async () => {
+  const generateScript = async (regenerate: boolean = false) => {
     setLoading(true);
+    setIsRegenerating(regenerate);
     setError('');
 
     try {
+      const model = getSelectedAIModel();
+      console.log('📤 Requesting interview script:', { 
+        storyId: story.id, 
+        regenerate, 
+        model,
+        hasStoryId: !!story.id 
+      });
+      
       const res = await fetch('http://localhost:3001/api/stories/to-script', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(story),
+        body: JSON.stringify({ 
+          storyId: story.id,
+          title: story.title,
+          situation: story.situation,
+          task: story.task,
+          action: story.action,
+          result: story.result,
+          metrics: story.metrics,
+          model,
+          regenerate 
+        }),
       });
 
       if (!res.ok) {
@@ -52,6 +74,13 @@ function InterviewScriptModal({ onClose, story }: InterviewScriptModalProps) {
       setError(err instanceof Error ? err.message : 'Failed to generate interview script');
     } finally {
       setLoading(false);
+      setIsRegenerating(false);
+    }
+  };
+
+  const handleRegenerate = () => {
+    if (!loading) {
+      generateScript(true);
     }
   };
 
@@ -90,7 +119,7 @@ ${script.practiceQuestions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
           {loading && (
             <div className="loading-state">
               <div className="spinner"></div>
-              <p>✨ Generating your interview script...</p>
+              <p>{isRegenerating ? '🔄 Regenerating interview script...' : '✨ Loading your interview script...'}</p>
             </div>
           )}
 
@@ -144,12 +173,22 @@ ${script.practiceQuestions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
             Close
           </button>
           {script && (
-            <button 
-              className="btn-primary" 
-              onClick={copyToClipboard}
-            >
-              📋 Copy Script
-            </button>
+            <>
+              <button 
+                className="btn-secondary" 
+                onClick={handleRegenerate}
+                disabled={loading}
+                title="Generate a new version with AI"
+              >
+                {loading && isRegenerating ? '🔄 Regenerating...' : '🔄 Regenerate'}
+              </button>
+              <button 
+                className="btn-primary" 
+                onClick={copyToClipboard}
+              >
+                📋 Copy Script
+              </button>
+            </>
           )}
         </div>
       </div>

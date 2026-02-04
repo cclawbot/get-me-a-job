@@ -88,17 +88,18 @@ model Certification {
 }
 
 model Story {
-  id          Int      @id @default(autoincrement())
-  userId      String   @default("default")
-  title       String
-  situation   String   // STAR: Situation
-  task        String   // STAR: Task
-  action      String   // STAR: Action
-  result      String   // STAR: Result
-  tags        String   // JSON array of tags/keywords
-  metrics     String?  // Quantifiable achievements
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  userId          String   @default("default")
+  title           String
+  situation       String   // STAR: Situation
+  task            String   // STAR: Task
+  action          String   // STAR: Action
+  result          String   // STAR: Result
+  tags            String   // JSON array of tags/keywords
+  metrics         String?  // Quantifiable achievements
+  interviewScript String?  // Cached interview script (JSON)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model TailoredResume {

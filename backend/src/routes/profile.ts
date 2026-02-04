@@ -130,14 +130,14 @@ export default router;
 // Parse resume with AI
 router.post('/parse-resume', async (req, res) => {
   try {
-    const { resumeText } = req.body;
+    const { resumeText, model } = req.body;
 
     if (!resumeText || typeof resumeText !== 'string') {
       return res.status(400).json({ error: 'Resume text is required' });
     }
 
-    console.log('Parsing resume with AI...');
-    const parsedData = await parseResume(resumeText);
+    console.log(`Parsing resume with AI (${model || 'default'})...`);
+    const parsedData = await parseResume(resumeText, model);
     console.log('Resume parsed successfully');
 
     res.json(parsedData);

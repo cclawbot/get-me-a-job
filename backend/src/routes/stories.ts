@@ -93,14 +93,14 @@ export default router;
 // AI: Generate story from notes
 router.post('/generate', async (req, res) => {
   try {
-    const { notes } = req.body;
+    const { notes, model } = req.body;
 
     if (!notes || typeof notes !== 'string') {
       return res.status(400).json({ error: 'Notes are required' });
     }
 
-    console.log('Generating story with AI...');
-    const generatedStory = await generateStory(notes);
+    console.log(`Generating story with AI (${model || 'default'})...`);
+    const generatedStory = await generateStory(notes, model);
     console.log('Story generated successfully');
 
     res.json(generatedStory);
@@ -116,14 +116,14 @@ router.post('/generate', async (req, res) => {
 // AI: Optimize existing story
 router.post('/optimize', async (req, res) => {
   try {
-    const { title, situation, task, action, result, metrics } = req.body;
+    const { title, situation, task, action, result, metrics, model } = req.body;
 
     if (!title || !situation || !task || !action || !result) {
       return res.status(400).json({ error: 'All STAR fields are required' });
     }
 
-    console.log('Optimizing story with AI...');
-    const optimized = await optimizeStory({ title, situation, task, action, result, metrics });
+    console.log(`Optimizing story with AI (${model || 'default'})...`);
+    const optimized = await optimizeStory({ title, situation, task, action, result, metrics }, model);
     console.log('Story optimized successfully');
 
     res.json(optimized);
@@ -136,18 +136,48 @@ router.post('/optimize', async (req, res) => {
   }
 });
 
-// AI: Convert story to interview script
+// AI: Convert story to interview script (with caching)
 router.post('/to-script', async (req, res) => {
   try {
-    const { title, situation, task, action, result, metrics } = req.body;
+    const { storyId, title, situation, task, action, result, metrics, model, regenerate } = req.body;
+
+    console.log('📥 Received to-script request:', { storyId, regenerate, model, hasStoryId: !!storyId });
 
     if (!title || !situation || !task || !action || !result) {
       return res.status(400).json({ error: 'All STAR fields are required' });
     }
 
-    console.log('Converting story to interview script...');
-    const script = await storyToScript({ title, situation, task, action, result, metrics });
-    console.log('Script generated successfully');
+    // Check for cached script if storyId provided and not forcing regeneration
+    if (storyId && !regenerate) {
+      console.log(`🔍 Checking cache for story ${storyId}...`);
+      const story = await prisma.story.findUnique({
+        where: { id: parseInt(storyId) },
+        select: { interviewScript: true },
+      });
+
+      if (story?.interviewScript) {
+        console.log(`✅ Cache HIT! Returning cached interview script for story ${storyId}`);
+        return res.json(JSON.parse(story.interviewScript));
+      } else {
+        console.log(`❌ Cache MISS for story ${storyId}`);
+      }
+    }
+
+    // Generate new script
+    console.log(`🤖 ${regenerate ? 'Regenerating' : 'Generating'} interview script (${model || 'default'})...`);
+    const script = await storyToScript({ title, situation, task, action, result, metrics }, model);
+    console.log('✅ Script generated successfully');
+
+    // Save to database if storyId provided
+    if (storyId) {
+      await prisma.story.update({
+        where: { id: parseInt(storyId) },
+        data: { interviewScript: JSON.stringify(script) },
+      });
+      console.log(`💾 Saved script to cache for story ${storyId}`);
+    } else {
+      console.log('⚠️  No storyId provided - script not cached');
+    }
 
     res.json(script);
   } catch (error) {

@@ -1,19 +1,20 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
-import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 import puppeteer from 'puppeteer';
+import { parseJobFromURL } from '../services/ai';
 
 const router = Router();
 const prisma = new PrismaClient();
 
-// Initialize OpenAI (will be null if API key not set)
-let openai: OpenAI | null = null;
+// Initialize Anthropic (will be null if API key not set)
+let anthropic: Anthropic | null = null;
 try {
-  if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'your_openai_api_key_here') {
-    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  if (process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'your_anthropic_api_key_here') {
+    anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   }
 } catch (error) {
-  console.error('Failed to initialize OpenAI:', error);
+  console.error('Failed to initialize Anthropic:', error);
 }
 
 // Get all tailored resumes
@@ -67,10 +68,10 @@ router.post('/tailor', async (req, res) => {
       return res.status(400).json({ error: 'Job description and title are required' });
     }
 
-    // Check if OpenAI is configured
-    if (!openai) {
+    // Check if Anthropic is configured
+    if (!anthropic) {
       return res.status(400).json({ 
-        error: 'OpenAI API key not configured. Please set OPENAI_API_KEY in backend/.env file',
+        error: 'Anthropic API key not configured. Please set ANTHROPIC_API_KEY in backend/.env file',
         demo: true 
       });
     }
@@ -116,22 +117,29 @@ router.post('/tailor', async (req, res) => {
       metrics: s.metrics,
     }));
 
-    // Call OpenAI to analyze JD and tailor resume
-    const systemPrompt = `You are an expert resume writer and ATS optimization specialist. Your task is to:
+    // Call Claude to analyze JD and tailor resume
+    const prompt = `You are an expert resume writer and ATS optimization specialist. Your task is to:
 1. Analyze the job description to extract key requirements, skills, and keywords
 2. Match the candidate's experience and stories to the job requirements
 3. Generate a tailored resume that emphasizes relevant experience
 4. Optimize for ATS by incorporating keywords naturally
 5. Use strong action verbs and quantifiable achievements
 
-Return a JSON object with:
-- keywords: array of key skills/terms from JD
-- summary: tailored professional summary (2-3 sentences)
-- experiences: array of work experiences with tailored bullet points
-- matchedStories: array of story IDs that best match this job
-- atsScore: estimated ATS match score (0-100)`;
+CRITICAL WRITING STYLE RULES - AVOID AI SLOP:
+- Write like a real person, not a robot
+- Use natural, conversational language (while staying professional)
+- Be specific and concrete - avoid vague buzzwords
+- NO generic AI phrases like: "I am passionate about", "leverage synergies", "utilize", "spearheaded", "game-changer"
+- NO excessive corporate jargon or buzzwords
+- NO robotic sentence patterns or overly formal language
+- Use simple, clear, powerful words instead of complicated ones
+- Focus on WHAT YOU DID and RESULTS, not fluffy descriptions
+- Make it sound like something a confident human would actually say
 
-    const userPrompt = `Job Description:
+Good: "Led 5-person team to redesign checkout flow, reducing cart abandonment by 23%"
+Bad: "Leveraged innovative leadership capabilities to spearhead transformational UX initiatives that optimized conversion metrics"
+
+Job Description:
 ${jobDescription}
 
 Candidate Profile:
@@ -140,19 +148,36 @@ ${JSON.stringify(profileContext, null, 2)}
 Achievement Stories:
 ${JSON.stringify(storiesContext, null, 2)}
 
-Please tailor this candidate's resume for the job description above.`;
+Please tailor this candidate's resume for the job description above.
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.7,
+Return a JSON object with:
+- keywords: array of key skills/terms from JD
+- summary: tailored professional summary (2-3 sentences, NATURAL TONE)
+- experiences: array of work experiences with tailored bullet points (HUMAN-SOUNDING)
+- matchedStories: array of story IDs that best match this job
+- atsScore: estimated ATS match score (0-100)
+
+Return ONLY valid JSON, no other text.`;
+
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 4096,
+      messages: [{ role: 'user', content: prompt }],
     });
 
-    const tailoredContent = JSON.parse(completion.choices[0].message.content || '{}');
+    const textContent = message.content.find((c) => c.type === 'text');
+    if (!textContent || textContent.type !== 'text') {
+      throw new Error('No text response from Claude');
+    }
+
+    // Extract JSON from response (might be wrapped in markdown code blocks)
+    let jsonText = textContent.text.trim();
+    const jsonMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    if (jsonMatch) {
+      jsonText = jsonMatch[1];
+    }
+
+    const tailoredContent = JSON.parse(jsonText);
 
     // Save tailored resume
     const resume = await prisma.tailoredResume.create({
@@ -403,5 +428,65 @@ function generateResumeHTML(profile: any, content: any, skills: string[]): strin
 </html>
   `.trim();
 }
+
+// Parse job description from URL
+router.post('/parse-url', async (req, res) => {
+  try {
+    const { url, model } = req.body;
+
+    if (!url || typeof url !== 'string') {
+      return res.status(400).json({ error: 'URL is required' });
+    }
+
+    console.log(`🔗 Fetching job description from URL: ${url}`);
+
+    // Fetch the webpage content using Puppeteer (handles anti-scraping sites)
+    let pageContent: string;
+    try {
+      console.log('🌐 Launching browser...');
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      });
+      
+      const page = await browser.newPage();
+      
+      // Set realistic viewport and user agent
+      await page.setViewport({ width: 1920, height: 1080 });
+      await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+      
+      console.log('📄 Loading page...');
+      await page.goto(url, { 
+        waitUntil: 'networkidle2',
+        timeout: 30000 
+      });
+      
+      // Get the text content
+      pageContent = await page.evaluate(() => document.body.innerText);
+      
+      await browser.close();
+      console.log(`✅ Fetched ${pageContent.length} characters`);
+    } catch (fetchError) {
+      console.error('Failed to fetch URL:', fetchError);
+      return res.status(400).json({ 
+        error: 'Failed to fetch URL. Please check the link and try again.',
+        details: fetchError instanceof Error ? fetchError.message : 'Unknown error'
+      });
+    }
+
+    // Parse with AI
+    console.log(`🤖 Parsing job description with AI (${model || 'default'})...`);
+    const parsed = await parseJobFromURL(pageContent, url, model);
+    console.log(`✅ Successfully parsed job: ${parsed.jobTitle} at ${parsed.company}`);
+
+    res.json(parsed);
+  } catch (error) {
+    console.error('Error parsing job URL:', error);
+    res.status(500).json({ 
+      error: 'Failed to parse job description', 
+      details: error instanceof Error ? error.message : 'Unknown error' 
+    });
+  }
+});
 
 export default router;

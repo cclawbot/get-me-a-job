@@ -26,7 +26,7 @@ A fully functional AI-powered resume tailoring web application that allows users
 
 ---
 
-## 🔌 Backend API (Express + OpenAI + Puppeteer)
+## 🔌 Backend API (Express + Anthropic Claude + Puppeteer)
 
 ### Routes Implemented:
 
@@ -42,7 +42,7 @@ A fully functional AI-powered resume tailoring web application that allows users
 
 #### Resume Tailoring
 - `POST /api/resumes/tailor` - **AI-powered resume tailoring**
-  - Analyzes job description using GPT-4
+  - Analyzes job description using Claude Sonnet 4.5
   - Extracts keywords and requirements
   - Matches user stories to job needs
   - Generates optimized resume bullets
@@ -53,7 +53,7 @@ A fully functional AI-powered resume tailoring web application that allows users
 - `GET /api/resumes/:id/pdf` - **Export resume as professional PDF**
 
 ### Dependencies Added:
-- ✅ `openai` - GPT-4 integration for AI tailoring
+- ✅ `@anthropic-ai/sdk` - Claude Sonnet 4.5 integration for AI tailoring
 - ✅ `puppeteer` - PDF generation with clean formatting
 
 ---
@@ -140,7 +140,7 @@ A fully functional AI-powered resume tailoring web application that allows users
 ### Resume Tailoring Process:
 
 1. **Job Description Analysis**
-   - GPT-4 parses JD text
+   - Claude Sonnet 4.5 parses JD text
    - Extracts required skills, keywords, qualifications
    - Identifies key themes and requirements
 
@@ -220,7 +220,7 @@ A fully functional AI-powered resume tailoring web application that allows users
 - JSON storage for flexible fields (skills, tags, keywords)
 
 ### ✅ AI Integration
-- OpenAI GPT-4 integration
+- Anthropic Claude Sonnet 4.5 integration
 - Structured JSON responses
 - Error handling for API failures
 - Graceful degradation without API key
@@ -248,7 +248,7 @@ get-me-a-job/
 │   │       ├── profile.ts         ✅ Profile CRUD
 │   │       ├── stories.ts         ✅ Story CRUD
 │   │       └── resumes.ts         ✅ AI tailor + PDF
-│   ├── .env                       ⚠️ Add OpenAI key
+│   ├── .env                       ✅ Anthropic key configured
 │   └── package.json               ✅ Dependencies installed
 ├── frontend/
 │   ├── src/
@@ -277,16 +277,12 @@ get-me-a-job/
 - **Database:** SQLite initialized with all tables
 - **Git:** All changes committed
 
-### ⚠️ Configuration Needed
-**To use AI tailoring feature:**
-1. Open `backend/.env`
-2. Replace `OPENAI_API_KEY=your_openai_api_key_here` with actual key
-3. Restart backend server
-
-**Without API key:**
-- App works fully for profile and stories
-- Tailoring page shows helpful error message
-- All other features functional
+### ✅ Fully Configured
+**AI tailoring ready to use:**
+- Anthropic API key configured in `backend/.env`
+- Using Claude Sonnet 4.5 for resume tailoring
+- Backend server running with Claude integration
+- All features functional
 
 ---
 
@@ -323,7 +319,7 @@ get-me-a-job/
 ### Quick Start:
 1. ✅ **Build Profile** - Complete all sections (5-10 min)
 2. ✅ **Add Stories** - Create 5-10 achievement stories with STAR method
-3. ✅ **Configure OpenAI** - Add API key to backend/.env
+3. ✅ **Claude Configured** - API key already set up!
 4. ✅ **Tailor Resume** - Paste a job description and generate
 5. ✅ **Download PDF** - Export professional resume
 
@@ -340,7 +336,7 @@ get-me-a-job/
 
 ### Security Considerations:
 - ✅ CORS configured for local development
-- ✅ OpenAI API key in .env (gitignored)
+- ✅ Anthropic API key in .env (gitignored)
 - ✅ Input validation on backend
 - ⚠️ Single-user MVP (no authentication)
 - 📝 For production: Add auth, multi-user support
@@ -368,7 +364,7 @@ get-me-a-job/
 - prisma - Database migrations
 - cors - Cross-origin requests
 - dotenv - Environment variables
-- **openai** - GPT-4 AI integration ✨
+- **@anthropic-ai/sdk** - Claude Sonnet 4.5 AI integration ✨
 - **puppeteer** - PDF generation ✨
 
 ### Frontend:
@@ -418,10 +414,10 @@ get-me-a-job/
 
 The MVP is **fully functional** and **production-ready** for single-user use!
 
-**Next Steps:**
-1. Add your OpenAI API key to `backend/.env`
-2. Build your profile and story bank
-3. Start tailoring resumes for job applications!
+**You're All Set:**
+1. ✅ Claude API configured and ready
+2. ✅ Build your profile and story bank
+3. ✅ Start tailoring resumes for job applications!
 
 **Future Enhancements:**
 - User authentication
@@ -434,5 +430,6 @@ The MVP is **fully functional** and **production-ready** for single-user use!
 ---
 
 **Built:** February 3, 2026
+**Updated:** February 4, 2026 (Switched to Claude Sonnet 4.5)
 **Status:** ✅ Complete and Running
-**Tech Stack:** React 18 + Express + Prisma + OpenAI + Puppeteer
+**Tech Stack:** React 19 + Express + Prisma + Anthropic Claude + Puppeteer

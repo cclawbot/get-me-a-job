@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getSelectedAIModel } from '../utils/aiModel';
 import './TailorResumePage.css';
 
 interface TailoredResume {
@@ -21,12 +22,51 @@ interface TailoredResume {
 
 function TailorResumePage() {
   const navigate = useNavigate();
+  const [jobUrl, setJobUrl] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [company, setCompany] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [loading, setLoading] = useState(false);
+  const [parsingUrl, setParsingUrl] = useState(false);
   const [tailoredResume, setTailoredResume] = useState<TailoredResume | null>(null);
   const [error, setError] = useState('');
+
+  const handleParseUrl = async () => {
+    if (!jobUrl.trim()) {
+      setError('Please enter a job posting URL');
+      return;
+    }
+
+    setParsingUrl(true);
+    setError('');
+
+    try {
+      const model = getSelectedAIModel();
+      const res = await fetch('http://localhost:3001/api/resumes/parse-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: jobUrl, model }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.details || 'Failed to parse URL');
+      }
+
+      const data = await res.json();
+      setJobTitle(data.jobTitle);
+      setCompany(data.company || '');
+      setJobDescription(data.jobDescription);
+      setError('');
+      
+      console.log('✅ Successfully parsed job from URL:', data);
+    } catch (err) {
+      console.error('Parse URL error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to parse job URL');
+    } finally {
+      setParsingUrl(false);
+    }
+  };
 
   const handleTailor = async () => {
     if (!jobTitle || !jobDescription) {
@@ -92,6 +132,35 @@ function TailorResumePage() {
       {!tailoredResume ? (
         <div className="input-section">
           <div className="form-card">
+            <div className="url-section">
+              <h3>🔗 Quick Import from URL</h3>
+              <p className="helper-text">Paste a job posting URL (Seek, LinkedIn, Indeed, etc.) and we'll extract the details automatically</p>
+              
+              <div className="url-input-group">
+                <input
+                  type="url"
+                  value={jobUrl}
+                  onChange={(e) => setJobUrl(e.target.value)}
+                  placeholder="https://www.seek.com.au/job/..."
+                  className="url-input"
+                  disabled={parsingUrl}
+                />
+                <button 
+                  onClick={handleParseUrl}
+                  disabled={parsingUrl || !jobUrl.trim()}
+                  className="btn-primary"
+                >
+                  {parsingUrl ? '🤖 Fetching...' : '🔍 Fetch & Parse'}
+                </button>
+              </div>
+              
+              <div className="divider">
+                <span>OR</span>
+              </div>
+            </div>
+
+            <h3>✍️ Manual Entry</h3>
+
             <div className="form-group">
               <label>Job Title *</label>
               <input
@@ -123,6 +192,10 @@ function TailorResumePage() {
             </div>
 
             {error && <div className="error-message">{error}</div>}
+
+            <div className="ai-note">
+              💡 <strong>Smart tailoring:</strong> Our AI writes in a natural, human tone — no generic buzzwords or corporate jargon. Just clear, powerful language that gets results.
+            </div>
 
             <div className="form-actions">
               <button 

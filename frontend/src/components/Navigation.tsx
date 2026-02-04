@@ -2,9 +2,15 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './Navigation.css';
 
+export type AIModel = 'claude-sonnet-4-5' | 'claude-haiku-4-5';
+
 function Navigation() {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<AIModel>(() => {
+    const saved = localStorage.getItem('ai-model');
+    return (saved as AIModel) || 'claude-sonnet-4-5';
+  });
 
   // Close menu when route changes
   useEffect(() => {
@@ -16,12 +22,30 @@ function Navigation() {
     setIsOpen(false);
   };
 
+  // Toggle AI model
+  const handleModelToggle = () => {
+    const newModel: AIModel = selectedModel === 'claude-sonnet-4-5' ? 'claude-haiku-4-5' : 'claude-sonnet-4-5';
+    setSelectedModel(newModel);
+    localStorage.setItem('ai-model', newModel);
+    
+    // Dispatch custom event so other components can react
+    window.dispatchEvent(new CustomEvent('ai-model-changed', { detail: newModel }));
+  };
+
   return (
     <>
       <nav className="navigation">
         <div className="nav-brand">
           <h2>🎯 Resume Builder</h2>
         </div>
+
+        <button 
+          className="model-toggle" 
+          onClick={handleModelToggle}
+          title={`Current: ${selectedModel === 'claude-sonnet-4-5' ? 'Sonnet (Powerful)' : 'Haiku (Fast & Cheaper)'}`}
+        >
+          🤖 {selectedModel === 'claude-sonnet-4-5' ? 'Sonnet' : 'Haiku'}
+        </button>
         
         <button 
           className="nav-toggle" 

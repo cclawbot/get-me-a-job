@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getSelectedAIModel } from '../utils/aiModel';
 import StoryGeneratorModal from '../components/StoryGeneratorModal';
 import InterviewScriptModal from '../components/InterviewScriptModal';
 import './StoryBankPage.css';
@@ -165,10 +166,11 @@ function StoryBankPage() {
 
     setOptimizing(true);
     try {
+      const model = getSelectedAIModel();
       const res = await fetch('http://localhost:3001/api/stories/optimize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, situation, task, action, result, metrics }),
+        body: JSON.stringify({ title, situation, task, action, result, metrics, model }),
       });
 
       if (!res.ok) {
@@ -407,6 +409,7 @@ function StoryBankPage() {
             setSelectedStoryForScript(null);
           }}
           story={{
+            id: selectedStoryForScript.id,
             title: selectedStoryForScript.title,
             situation: selectedStoryForScript.situation,
             task: selectedStoryForScript.task,

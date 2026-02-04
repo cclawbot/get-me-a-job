@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getSelectedAIModel } from '../utils/aiModel';
 import './ResumeParserModal.css';
 
 interface ParsedResumeData {
@@ -32,10 +33,11 @@ function ResumeParserModal({ onClose, onDataParsed }: ResumeParserModalProps) {
     setError('');
 
     try {
+      const model = getSelectedAIModel();
       const res = await fetch('http://localhost:3001/api/profile/parse-resume', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeText }),
+        body: JSON.stringify({ resumeText, model }),
       });
 
       if (!res.ok) {

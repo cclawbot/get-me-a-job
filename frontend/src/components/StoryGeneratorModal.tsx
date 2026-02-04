@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getSelectedAIModel } from '../utils/aiModel';
 import './ResumeParserModal.css'; // Reuse modal styles
 
 interface GeneratedStory {
@@ -31,10 +32,11 @@ function StoryGeneratorModal({ onClose, onStoryGenerated }: StoryGeneratorModalP
     setError('');
 
     try {
+      const model = getSelectedAIModel();
       const res = await fetch('http://localhost:3001/api/stories/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notes }),
+        body: JSON.stringify({ notes, model }),
       });
 
       if (!res.ok) {
