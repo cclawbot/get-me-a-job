@@ -85,6 +85,53 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// Update resume (edit mode)
+router.patch('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const resumeId = parseInt(id);
+    const { summary, experiences, keywords } = req.body;
+
+    // Check if resume exists
+    const resume = await prisma.tailoredResume.findUnique({
+      where: { id: resumeId },
+    });
+
+    if (!resume) {
+      return res.status(404).json({ error: 'Resume not found' });
+    }
+
+    // Parse existing content
+    const existingContent = JSON.parse(resume.content);
+
+    // Update with new values
+    const updatedContent = {
+      ...existingContent,
+      summary: summary || existingContent.summary,
+      experiences: experiences || existingContent.experiences,
+      keywords: keywords || existingContent.keywords,
+    };
+
+    // Save updated resume
+    const updatedResume = await prisma.tailoredResume.update({
+      where: { id: resumeId },
+      data: {
+        content: JSON.stringify(updatedContent),
+        keywords: JSON.stringify(keywords || existingContent.keywords),
+      },
+    });
+
+    res.json({ 
+      message: 'Resume updated successfully', 
+      id: resumeId,
+      content: updatedContent
+    });
+  } catch (error) {
+    console.error('Error updating resume:', error);
+    res.status(500).json({ error: 'Failed to update resume' });
+  }
+});
+
 // Tailor resume based on job description
 router.post('/tailor', async (req, res) => {
   try {

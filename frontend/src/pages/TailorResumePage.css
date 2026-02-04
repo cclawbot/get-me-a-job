@@ -557,3 +557,127 @@
 .ai-note strong {
   color: #2980b9;
 }
+
+/* Edit Mode Styles */
+.edit-mode-notice {
+  background: #fff3cd;
+  border: 2px solid #ffc107;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  color: #856404;
+  font-size: 0.95rem;
+}
+
+.editable-summary {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #3498db;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+  line-height: 1.6;
+  resize: vertical;
+  background: #f8f9fa;
+  transition: border-color 0.2s;
+}
+
+.editable-summary:focus {
+  outline: none;
+  border-color: #2980b9;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.editable-bullet-item {
+  list-style: none;
+  margin-left: -2rem;
+  padding-left: 0;
+}
+
+.editable-bullet {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.bullet-input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 2px solid #3498db;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+  background: #f8f9fa;
+  transition: border-color 0.2s;
+}
+
+.bullet-input:focus {
+  outline: none;
+  border-color: #2980b9;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.btn-remove-bullet {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.btn-remove-bullet:hover {
+  background: #c0392b;
+  transform: scale(1.1);
+}
+
+.btn-add-bullet {
+  background: #27ae60;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-top: 0.75rem;
+  transition: all 0.2s;
+}
+
+.btn-add-bullet:hover {
+  background: #229954;
+  transform: translateY(-1px);
+}
+
+/* Responsive Edit Mode */
+@media (max-width: 768px) {
+  .edit-mode-notice {
+    padding: 0.875rem 1.25rem;
+    font-size: 0.875rem;
+  }
+
+  .editable-bullet {
+    flex-direction: column;
+  }
+
+  .btn-remove-bullet {
+    align-self: flex-end;
+  }
+
+  .bullet-input,
+  .editable-summary {
+    font-size: 0.9rem;
+  }
+}

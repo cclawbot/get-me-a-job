@@ -43,6 +43,8 @@ function TailorResumePage() {
   const [parsingUrl, setParsingUrl] = useState(false);
   const [tailoredResume, setTailoredResume] = useState<TailoredResume | null>(null);
   const [error, setError] = useState('');
+  const [editMode, setEditMode] = useState(false);
+  const [editedResume, setEditedResume] = useState<TailoredResume | null>(null);
 
   const handleParseUrl = async () => {
     if (!jobUrl.trim()) {
@@ -134,8 +136,84 @@ function TailorResumePage() {
 
   const handleReset = () => {
     setTailoredResume(null);
+    setEditedResume(null);
+    setEditMode(false);
     setError('');
   };
+
+  const handleEnterEditMode = () => {
+    if (tailoredResume) {
+      // Create a deep copy for editing
+      setEditedResume(JSON.parse(JSON.stringify(tailoredResume)));
+      setEditMode(true);
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    if (!editedResume || !editedResume.id) return;
+
+    try {
+      const res = await fetch(`http://localhost:3001/api/resumes/${editedResume.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          summary: editedResume.summary,
+          experiences: editedResume.experiences,
+          keywords: editedResume.keywords,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to save changes');
+      }
+
+      // Update the main resume with edited content
+      setTailoredResume(editedResume);
+      setEditMode(false);
+      alert('✅ Changes saved successfully!');
+    } catch (err) {
+      console.error('Failed to save changes:', err);
+      alert('Failed to save changes. Please try again.');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditedResume(null);
+    setEditMode(false);
+  };
+
+  const handleSummaryChange = (value: string) => {
+    if (editedResume) {
+      setEditedResume({ ...editedResume, summary: value });
+    }
+  };
+
+  const handleBulletChange = (expIndex: number, bulletIndex: number, value: string) => {
+    if (editedResume) {
+      const newExperiences = [...editedResume.experiences];
+      newExperiences[expIndex].bullets[bulletIndex] = value;
+      setEditedResume({ ...editedResume, experiences: newExperiences });
+    }
+  };
+
+  const handleAddBullet = (expIndex: number) => {
+    if (editedResume) {
+      const newExperiences = [...editedResume.experiences];
+      newExperiences[expIndex].bullets.push('');
+      setEditedResume({ ...editedResume, experiences: newExperiences });
+    }
+  };
+
+  const handleRemoveBullet = (expIndex: number, bulletIndex: number) => {
+    if (editedResume) {
+      const newExperiences = [...editedResume.experiences];
+      newExperiences[expIndex].bullets.splice(bulletIndex, 1);
+      setEditedResume({ ...editedResume, experiences: newExperiences });
+    }
+  };
+
+  // Get the current resume to display (edited or original)
+  const displayResume = editMode && editedResume ? editedResume : tailoredResume;
 
   return (
     <div className="tailor-resume-page">
@@ -234,9 +312,25 @@ function TailorResumePage() {
               <button onClick={handleReset} className="btn-secondary">
                 ← New Resume
               </button>
-              <button onClick={handleDownloadPDF} className="btn-primary">
-                📄 Download PDF
-              </button>
+              {editMode ? (
+                <>
+                  <button onClick={handleCancelEdit} className="btn-secondary">
+                    ✕ Cancel
+                  </button>
+                  <button onClick={handleSaveChanges} className="btn-primary">
+                    💾 Save Changes
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button onClick={handleEnterEditMode} className="btn-secondary">
+                    ✏️ Edit Resume
+                  </button>
+                  <button onClick={handleDownloadPDF} className="btn-primary">
+                    📄 Download PDF
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
@@ -264,8 +358,8 @@ function TailorResumePage() {
             </div>
           )}
 
-          {/* Comparison View */}
-          {tailoredResume.profile && (
+          {/* Comparison View - only show when not editing */}
+          {!editMode && tailoredResume?.profile && (
             <ResumeComparison
               originalProfile={{
                 summary: tailoredResume.profile.summary,
@@ -280,38 +374,53 @@ function TailorResumePage() {
             />
           )}
 
+          {editMode && (
+            <div className="edit-mode-notice">
+              <strong>✏️ Edit Mode:</strong> Make your changes below, then click "Save Changes" when done.
+            </div>
+          )}
+
           <div className="resume-preview">
             <div className="resume-header-preview">
-              <h1>{tailoredResume.profile?.name || 'Your Name'}</h1>
+              <h1>{displayResume?.profile?.name || 'Your Name'}</h1>
               <div className="contact-info">
-                {tailoredResume.profile?.email && <span>{tailoredResume.profile.email}</span>}
-                {tailoredResume.profile?.phone && <span>{tailoredResume.profile.phone}</span>}
+                {displayResume?.profile?.email && <span>{displayResume.profile.email}</span>}
+                {displayResume?.profile?.phone && <span>{displayResume.profile.phone}</span>}
               </div>
             </div>
 
-            {tailoredResume.summary && (
+            {displayResume?.summary && (
               <div className="resume-section">
                 <h2>Professional Summary</h2>
-                <p className="summary-text">{tailoredResume.summary}</p>
+                {editMode ? (
+                  <textarea
+                    className="editable-summary"
+                    value={editedResume?.summary || ''}
+                    onChange={(e) => handleSummaryChange(e.target.value)}
+                    rows={4}
+                  />
+                ) : (
+                  <p className="summary-text">{displayResume.summary}</p>
+                )}
               </div>
             )}
 
-            {tailoredResume.profile?.skills && Array.isArray(tailoredResume.profile.skills) && tailoredResume.profile.skills.length > 0 && (
+            {displayResume?.profile?.skills && Array.isArray(displayResume.profile.skills) && displayResume.profile.skills.length > 0 && (
               <div className="resume-section">
                 <h2>Skills</h2>
                 <div className="skills-list">
-                  {tailoredResume.profile.skills.map((skill: string, i: number) => (
+                  {displayResume.profile.skills.map((skill: string, i: number) => (
                     <span key={i} className="skill-badge">{skill}</span>
                   ))}
                 </div>
               </div>
             )}
 
-            {tailoredResume.experiences && tailoredResume.experiences.length > 0 && (
+            {displayResume?.experiences && displayResume.experiences.length > 0 && (
               <div className="resume-section">
                 <h2>Professional Experience</h2>
-                {tailoredResume.experiences.map((exp, i) => (
-                  <div key={i} className="experience-block">
+                {displayResume.experiences.map((exp, expIndex) => (
+                  <div key={expIndex} className="experience-block">
                     <div className="exp-header">
                       <div>
                         <h3>{exp.title}</h3>
@@ -323,20 +432,48 @@ function TailorResumePage() {
                     </div>
                     {exp.bullets && exp.bullets.length > 0 && (
                       <ul className="bullet-list">
-                        {exp.bullets.map((bullet, j) => (
-                          <li key={j}>{bullet}</li>
+                        {exp.bullets.map((bullet, bulletIndex) => (
+                          <li key={bulletIndex} className={editMode ? 'editable-bullet-item' : ''}>
+                            {editMode ? (
+                              <div className="editable-bullet">
+                                <textarea
+                                  className="bullet-input"
+                                  value={bullet}
+                                  onChange={(e) => handleBulletChange(expIndex, bulletIndex, e.target.value)}
+                                  rows={2}
+                                />
+                                <button
+                                  className="btn-remove-bullet"
+                                  onClick={() => handleRemoveBullet(expIndex, bulletIndex)}
+                                  title="Remove bullet"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ) : (
+                              bullet
+                            )}
+                          </li>
                         ))}
                       </ul>
+                    )}
+                    {editMode && (
+                      <button
+                        className="btn-add-bullet"
+                        onClick={() => handleAddBullet(expIndex)}
+                      >
+                        + Add Bullet
+                      </button>
                     )}
                   </div>
                 ))}
               </div>
             )}
 
-            {tailoredResume.profile?.educations && tailoredResume.profile.educations.length > 0 && (
+            {displayResume?.profile?.educations && displayResume.profile.educations.length > 0 && (
               <div className="resume-section">
                 <h2>Education</h2>
-                {tailoredResume.profile.educations.map((edu: any, i: number) => (
+                {displayResume.profile.educations.map((edu: any, i: number) => (
                   <div key={i} className="education-block">
                     <h3>{edu.degree}{edu.field && ` in ${edu.field}`}</h3>
                     <div className="institution">{edu.institution}</div>
@@ -346,10 +483,10 @@ function TailorResumePage() {
               </div>
             )}
 
-            {tailoredResume.profile?.certifications && tailoredResume.profile.certifications.length > 0 && (
+            {displayResume?.profile?.certifications && displayResume.profile.certifications.length > 0 && (
               <div className="resume-section">
                 <h2>Certifications</h2>
-                {tailoredResume.profile.certifications.map((cert: any, i: number) => (
+                {displayResume.profile.certifications.map((cert: any, i: number) => (
                   <div key={i} className="cert-block">
                     {cert.name} - {cert.issuer}
                     {cert.date && ` (${cert.date})`}
