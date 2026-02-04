@@ -341,8 +341,15 @@ router.get('/:id/pdf', async (req, res) => {
 
     await browser.close();
 
+    // Sanitize filename - remove special characters and normalize spaces
+    const safeFilename = resume.jobTitle
+      .replace(/[^\w\s-]/g, '')  // Remove special chars except word chars, spaces, hyphens
+      .replace(/\s+/g, '-')       // Replace spaces with hyphens
+      .replace(/-+/g, '-')        // Replace multiple hyphens with single
+      .substring(0, 100);         // Limit length
+    
     res.contentType('application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="resume-${resume.jobTitle.replace(/\s+/g, '-')}.pdf"`);
+    res.setHeader('Content-Disposition', `attachment; filename="resume-${safeFilename}.pdf"`);
     res.end(pdf, 'binary');
   } catch (error) {
     console.error('Error generating PDF:', error);
