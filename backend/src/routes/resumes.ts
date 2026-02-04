@@ -181,7 +181,7 @@ Return a JSON object with this exact structure:
 {
   "keywords": ["skill1", "skill2"],
   "summary": "tailored professional summary (2-3 sentences, NATURAL TONE)",
-  "summaryReasoning": "CONCISE explanation. Sacrifice grammar for brevity. Use bullets if possible.",
+  "summaryReasoningPoints": ["Emphasized X per JD quote Y", "Added metrics for impact", "Short point 3"],
   "experiences": [
     {
       "company": "Company Name",
@@ -189,20 +189,21 @@ Return a JSON object with this exact structure:
       "startDate": "YYYY-MM",
       "endDate": "YYYY-MM or Present",
       "bullets": ["achievement 1", "achievement 2"],
-      "reasoning": "CONCISE explanation why this experience was tailored this way. Use bullets. Include JD quotes."
+      "reasoningPoints": ["Why point 1 with JD quote", "Why point 2", "Why point 3"]
     }
   ],
-  "tailoringNotes": "CONCISE overview of key changes. Use bullets. Include JD quotes.",
+  "tailoringNotesPoints": ["Key change 1 with JD quote", "Key change 2", "Key change 3"],
   "matchedStories": [1, 2, 3],
   "atsScore": 85
 }
 
-IMPORTANT FOR REASONING FIELDS:
+IMPORTANT FOR REASONING:
+- Use reasoningPoints, summaryReasoningPoints, tailoringNotesPoints as STRING ARRAYS
+- Each point is ONE string in the array (no newlines needed)
 - Be concise, sacrifice grammar for brevity
-- Use bullet points (• or -) to list key points
-- Keep each bullet to 1 short line
-- Include direct JD quotes in "quotes"
-- Example format: "• Emphasized [skill] per JD: 'quote from JD'\n• Added metrics to show impact\n• Removed irrelevant details"
+- Include JD quotes in the point text
+- Keep each point to 1 short sentence/phrase
+- Example: ["Emphasized SQL per JD: 'strong SQL required'", "Added metrics to show impact", "Removed outdated tech"]
 
 Return ONLY valid JSON, no markdown formatting, no code blocks, no extra text.`;
 
@@ -242,7 +243,27 @@ Return ONLY valid JSON, no markdown formatting, no code blocks, no extra text.`;
     
     console.log('🔍 Final JSON (first 200 chars):', jsonText.substring(0, 200));
 
-    const tailoredContent = JSON.parse(jsonText);
+    let tailoredContent;
+    try {
+      tailoredContent = JSON.parse(jsonText);
+    } catch (parseError: any) {
+      console.error('❌ JSON Parse Error:', parseError.message);
+      console.error('📄 Problematic JSON (first 500 chars):', jsonText.substring(0, 500));
+      console.error('📄 Problematic JSON (last 200 chars):', jsonText.substring(jsonText.length - 200));
+      
+      // Try to fix common issues
+      let fixedJson = jsonText
+        .replace(/,(\s*[}\]])/g, '$1')  // Remove trailing commas
+        .replace(/\n/g, '\\n')  // Escape newlines in strings
+        .replace(/\t/g, '\\t'); // Escape tabs
+      
+      try {
+        tailoredContent = JSON.parse(fixedJson);
+        console.log('✅ JSON fixed and parsed successfully');
+      } catch (secondError) {
+        throw new Error(`Failed to parse AI response: ${parseError.message}`);
+      }
+    }
 
     // Save tailored resume
     const resume = await prisma.tailoredResume.create({

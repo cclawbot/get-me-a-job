@@ -204,6 +204,17 @@
   margin-bottom: 0.75rem;
 }
 
+.reasoning-list {
+  margin: 0;
+  padding-left: 1.5rem;
+  line-height: 1.7;
+  color: #4a5568;
+}
+
+.reasoning-list li {
+  margin-bottom: 0.4rem;
+}
+
 .jd-quote {
   margin-top: 1rem;
   padding-top: 1rem;

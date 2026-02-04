@@ -8,8 +8,8 @@ interface TailoredResume {
   id?: number;
   keywords: string[];
   summary: string;
-  summaryReasoning?: string;
-  tailoringNotes?: string;
+  summaryReasoningPoints?: string[];
+  tailoringNotesPoints?: string[];
   experiences: Array<{
     company: string;
     title: string;
@@ -17,7 +17,7 @@ interface TailoredResume {
     startDate: string;
     endDate?: string;
     bullets: string[];
-    reasoning?: string;
+    reasoningPoints?: string[];
   }>;
   matchedStories?: number[];
   atsScore?: number;
@@ -273,8 +273,8 @@ function TailorResumePage() {
               }}
               tailoredResume={{
                 summary: tailoredResume.summary,
-                summaryReasoning: tailoredResume.summaryReasoning,
-                tailoringNotes: tailoredResume.tailoringNotes,
+                summaryReasoningPoints: tailoredResume.summaryReasoningPoints,
+                tailoringNotesPoints: tailoredResume.tailoringNotesPoints,
                 experiences: tailoredResume.experiences,
               }}
             />

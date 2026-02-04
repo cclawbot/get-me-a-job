@@ -14,8 +14,8 @@ interface ComparisonProps {
   };
   tailoredResume: {
     summary: string;
-    summaryReasoning?: string;
-    tailoringNotes?: string;
+    summaryReasoningPoints?: string[];
+    tailoringNotesPoints?: string[];
     experiences: Array<{
       company: string;
       title: string;
@@ -23,7 +23,7 @@ interface ComparisonProps {
       startDate: string;
       endDate?: string;
       bullets: string[];
-      reasoning?: string;
+      reasoningPoints?: string[];
     }>;
   };
 }
@@ -66,10 +66,14 @@ function ResumeComparison({ originalProfile, tailoredResume }: ComparisonProps) 
             </div>
           </div>
 
-          {tailoredResume.summaryReasoning && (
+          {tailoredResume.summaryReasoningPoints && tailoredResume.summaryReasoningPoints.length > 0 && (
             <div className="reasoning-box">
               <div className="reasoning-label">💡 Why this change?</div>
-              <p>{tailoredResume.summaryReasoning}</p>
+              <ul className="reasoning-list">
+                {tailoredResume.summaryReasoningPoints.map((point, idx) => (
+                  <li key={idx}>{point}</li>
+                ))}
+              </ul>
             </div>
           )}
         </div>
@@ -124,22 +128,28 @@ function ResumeComparison({ originalProfile, tailoredResume }: ComparisonProps) 
                   </div>
                 </div>
 
-                {tailoredExp.reasoning && (
+                {tailoredExp.reasoningPoints && tailoredExp.reasoningPoints.length > 0 && (
                   <div className="reasoning-box">
                     <div className="reasoning-label">💡 Why this change?</div>
-                    <div className="reasoning-text" style={{ whiteSpace: 'pre-line' }}>
-                      {tailoredExp.reasoning}
-                    </div>
+                    <ul className="reasoning-list">
+                      {tailoredExp.reasoningPoints.map((point, idx) => (
+                        <li key={idx}>{point}</li>
+                      ))}
+                    </ul>
                   </div>
                 )}
               </div>
             );
           })}
           
-          {tailoredResume.tailoringNotes && (
+          {tailoredResume.tailoringNotesPoints && tailoredResume.tailoringNotesPoints.length > 0 && (
             <div className="reasoning-box" style={{ marginTop: '1.5rem' }}>
               <div className="reasoning-label">💡 Overall Tailoring Strategy</div>
-              <p className="reasoning-text">{tailoredResume.tailoringNotes}</p>
+              <ul className="reasoning-list">
+                {tailoredResume.tailoringNotesPoints.map((point, idx) => (
+                  <li key={idx}>{point}</li>
+                ))}
+              </ul>
             </div>
           )}
         </div>
