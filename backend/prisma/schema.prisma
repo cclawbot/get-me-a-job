@@ -30,3 +30,85 @@ model Application {
   appliedAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+model Profile {
+  id            Int            @id @default(autoincrement())
+  userId        String         @default("default") @unique
+  name          String
+  email         String?
+  phone         String?
+  summary       String?
+  skills        String         // JSON array of skills
+  experiences   WorkExperience[]
+  educations    Education[]
+  certifications Certification[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model WorkExperience {
+  id          Int      @id @default(autoincrement())
+  profileId   Int
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  company     String
+  title       String
+  location    String?
+  startDate   String
+  endDate     String?
+  current     Boolean  @default(false)
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Education {
+  id          Int      @id @default(autoincrement())
+  profileId   Int
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  institution String
+  degree      String
+  field       String?
+  startDate   String?
+  endDate     String?
+  gpa         String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Certification {
+  id          Int      @id @default(autoincrement())
+  profileId   Int
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  name        String
+  issuer      String
+  date        String?
+  url         String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Story {
+  id          Int      @id @default(autoincrement())
+  userId      String   @default("default")
+  title       String
+  situation   String   // STAR: Situation
+  task        String   // STAR: Task
+  action      String   // STAR: Action
+  result      String   // STAR: Result
+  tags        String   // JSON array of tags/keywords
+  metrics     String?  // Quantifiable achievements
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TailoredResume {
+  id              Int      @id @default(autoincrement())
+  userId          String   @default("default")
+  jobTitle        String
+  company         String?
+  jobDescription  String   // Original JD
+  content         String   // Generated tailored resume content (JSON)
+  keywords        String   // Extracted keywords (JSON array)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

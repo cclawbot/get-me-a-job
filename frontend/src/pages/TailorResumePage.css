@@ -1,0 +1,289 @@
+.tailor-resume-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.tailor-resume-page h1 {
+  font-size: 2rem;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.input-section {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.form-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: #34495e;
+  margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.error-message {
+  background: #fee;
+  color: #c33;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #c33;
+}
+
+.btn-large {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+}
+
+.results-section {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.results-header h2 {
+  font-size: 1.8rem;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.job-info {
+  color: #7f8c8d;
+  font-size: 1.1rem;
+}
+
+.results-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.ats-score {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.score-label {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
+  opacity: 0.9;
+}
+
+.score-value {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.score-bar {
+  background: rgba(255,255,255,0.3);
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.score-fill {
+  background: white;
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+.keywords-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
+
+.keywords-section h3 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.keywords-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.keyword {
+  background: #e8f5e9;
+  color: #27ae60;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.resume-preview {
+  background: white;
+  padding: 3rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  font-family: 'Georgia', serif;
+}
+
+.resume-header-preview {
+  text-align: center;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #2c3e50;
+  margin-bottom: 2rem;
+}
+
+.resume-header-preview h1 {
+  font-size: 2rem;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.contact-info {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.contact-info span {
+  margin: 0 1rem;
+}
+
+.resume-section {
+  margin-bottom: 2rem;
+}
+
+.resume-section h2 {
+  font-size: 1.3rem;
+  color: #2c3e50;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.summary-text {
+  line-height: 1.6;
+  text-align: justify;
+  color: #34495e;
+}
+
+.skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.skill-badge {
+  background: #ecf0f1;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #2c3e50;
+}
+
+.experience-block {
+  margin-bottom: 2rem;
+}
+
+.exp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.exp-header h3 {
+  font-size: 1.1rem;
+  color: #2c3e50;
+  margin-bottom: 0.25rem;
+}
+
+.company-name {
+  font-weight: bold;
+  color: #3498db;
+}
+
+.exp-dates {
+  color: #7f8c8d;
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.bullet-list {
+  margin-left: 1.5rem;
+  list-style: disc;
+}
+
+.bullet-list li {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+  color: #34495e;
+}
+
+.education-block {
+  margin-bottom: 1rem;
+}
+
+.education-block h3 {
+  font-size: 1rem;
+  color: #2c3e50;
+  margin-bottom: 0.25rem;
+}
+
+.institution {
+  color: #3498db;
+  font-weight: 600;
+}
+
+.edu-date {
+  color: #7f8c8d;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.cert-block {
+  margin-bottom: 0.5rem;
+  color: #34495e;
+}
