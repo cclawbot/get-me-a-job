@@ -204,9 +204,21 @@ Return ONLY valid JSON, no other text.`;
 
     // Extract JSON from response (might be wrapped in markdown code blocks)
     let jsonText = textContent.text.trim();
+    
+    // Try to extract JSON from code blocks
     const jsonMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
     if (jsonMatch) {
-      jsonText = jsonMatch[1];
+      jsonText = jsonMatch[1].trim();
+    } else {
+      // Remove leading/trailing backticks if present
+      jsonText = jsonText.replace(/^`+|`+$/g, '').trim();
+    }
+    
+    // Find JSON object boundaries
+    const jsonStart = jsonText.indexOf('{');
+    const jsonEnd = jsonText.lastIndexOf('}');
+    if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+      jsonText = jsonText.substring(jsonStart, jsonEnd + 1);
     }
 
     const tailoredContent = JSON.parse(jsonText);
