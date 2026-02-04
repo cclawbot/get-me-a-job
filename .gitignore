@@ -10,6 +10,16 @@ build/
 .env.local
 .env.*.local
 
+# Secrets and credentials
+secrets/
+*.key
+*.pem
+*.p12
+*.pfx
+*.cert
+*.crt
+config/secrets.json
+
 # Database
 *.db
 *.db-journal
