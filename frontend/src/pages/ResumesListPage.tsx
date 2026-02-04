@@ -15,6 +15,7 @@ function ResumesListPage() {
   const [loading, setLoading] = useState(true);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
 
   useEffect(() => {
     fetchResumes();
@@ -75,6 +76,18 @@ function ResumesListPage() {
     });
   };
 
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
   if (loading) return <div className="loading">Loading resumes...</div>;
 
   return (
@@ -84,12 +97,30 @@ function ResumesListPage() {
           <h1>My Tailored Resumes</h1>
           <p className="subtitle">View and download your previously tailored resumes</p>
         </div>
-        <button 
-          onClick={() => navigate('/tailor')} 
-          className="btn-primary"
-        >
-          + Create New Resume
-        </button>
+        <div className="header-actions">
+          <div className="view-toggle">
+            <button 
+              onClick={() => setViewMode('list')}
+              className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
+              title="List view"
+            >
+              ☰
+            </button>
+            <button 
+              onClick={() => setViewMode('grid')}
+              className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
+              title="Grid view"
+            >
+              ⊞
+            </button>
+          </div>
+          <button 
+            onClick={() => navigate('/tailor')} 
+            className="btn-primary"
+          >
+            + Create New Resume
+          </button>
+        </div>
       </div>
 
       {resumes.length === 0 ? (
@@ -104,6 +135,48 @@ function ResumesListPage() {
             Tailor a Resume
           </button>
         </div>
+      ) : viewMode === 'list' ? (
+        <div className="resumes-list">
+          <table className="resumes-table">
+            <thead>
+              <tr>
+                <th>Job Title</th>
+                <th>Company</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {resumes.map((resume) => (
+                <tr key={resume.id}>
+                  <td className="job-title-cell">
+                    <strong>{resume.jobTitle}</strong>
+                  </td>
+                  <td>{resume.company || '—'}</td>
+                  <td className="date-cell">
+                    <span className="timestamp">{formatDateTime(resume.createdAt)}</span>
+                  </td>
+                  <td className="actions-cell">
+                    <button 
+                      onClick={() => handleDownloadPDF(resume.id, resume.jobTitle)}
+                      className="btn-table-action"
+                      title="Download PDF"
+                    >
+                      ⬇ Download
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteClick(resume.id)}
+                      className="btn-table-delete"
+                      title="Delete resume"
+                    >
+                      🗑 Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <div className="resumes-grid">
           {resumes.map((resume) => (
@@ -113,7 +186,7 @@ function ResumesListPage() {
                 <div className="resume-info">
                   <h3>{resume.jobTitle}</h3>
                   {resume.company && <p className="company">{resume.company}</p>}
-                  <p className="date">Created {formatDate(resume.createdAt)}</p>
+                  <p className="date">Created {formatDateTime(resume.createdAt)}</p>
                 </div>
               </div>
               <div className="resume-card-actions">

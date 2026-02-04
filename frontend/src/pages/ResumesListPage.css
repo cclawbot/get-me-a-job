@@ -4,6 +4,169 @@
   padding: 2rem;
 }
 
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 0.25rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 0.25rem;
+}
+
+.view-btn {
+  background: transparent;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1.125rem;
+  color: #7f8c8d;
+  transition: all 0.2s;
+}
+
+.view-btn:hover {
+  background: #e9ecef;
+  color: #2c3e50;
+}
+
+.view-btn.active {
+  background: #3498db;
+  color: white;
+}
+
+.btn-primary {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  background: #2980b9;
+}
+
+/* List View (Table) */
+.resumes-list {
+  margin-top: 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.resumes-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.resumes-table thead {
+  background: #f8f9fa;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.resumes-table th {
+  text-align: left;
+  padding: 1rem 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.resumes-table tbody tr {
+  border-bottom: 1px solid #e9ecef;
+  transition: background 0.15s;
+}
+
+.resumes-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.resumes-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.resumes-table td {
+  padding: 1.25rem 1.25rem;
+  color: #2c3e50;
+}
+
+.job-title-cell {
+  font-size: 1rem;
+}
+
+.job-title-cell strong {
+  color: #2c3e50;
+}
+
+.date-cell {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.timestamp {
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+}
+
+.actions-cell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.btn-table-action,
+.btn-table-delete {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  margin-left: 0.5rem;
+}
+
+.btn-table-action {
+  background: #3498db;
+  color: white;
+}
+
+.btn-table-action:hover {
+  background: #2980b9;
+  transform: translateY(-1px);
+}
+
+.btn-table-delete {
+  background: white;
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+}
+
+.btn-table-delete:hover {
+  background: #e74c3c;
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Grid View */
 .resumes-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -259,9 +422,35 @@
     padding: 1rem;
   }
   
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
   .resumes-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
+  }
+  
+  /* Make table scrollable on mobile */
+  .resumes-list {
+    overflow-x: auto;
+  }
+  
+  .resumes-table {
+    min-width: 600px;
+  }
+  
+  .resumes-table th,
+  .resumes-table td {
+    padding: 0.875rem 1rem;
+    font-size: 0.875rem;
   }
   
   .resume-card {
