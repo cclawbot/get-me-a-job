@@ -151,6 +151,7 @@ router.post('/tailor', async (req, res) => {
 3. Generate a tailored resume that emphasizes relevant experience
 4. Optimize for ATS by incorporating keywords naturally
 5. Use strong action verbs and quantifiable achievements
+6. PROVIDE DETAILED CHANGE REASONING - explain WHY each change was made and cite the JD
 
 CRITICAL WRITING STYLE RULES - AVOID AI SLOP:
 - Write like a real person, not a robot
@@ -180,9 +181,13 @@ Please tailor this candidate's resume for the job description above.
 Return a JSON object with:
 - keywords: array of key skills/terms from JD
 - summary: tailored professional summary (2-3 sentences, NATURAL TONE)
+- summaryReasoning: explanation of why the summary was written this way, with direct JD quotes
 - experiences: array of work experiences with tailored bullet points (HUMAN-SOUNDING)
+- experienceChanges: array of objects explaining each change, format: { experienceIndex: number, bulletIndex: number, original: string, tailored: string, reasoning: string, jdQuote: string }
 - matchedStories: array of story IDs that best match this job
 - atsScore: estimated ATS match score (0-100)
+
+IMPORTANT: For experienceChanges, compare the ORIGINAL experience bullets from the candidate profile with the TAILORED bullets you create. Include the exact original text, the new tailored text, reasoning for the change, and the relevant quote from the JD that motivated it.
 
 Return ONLY valid JSON, no other text.`;
 

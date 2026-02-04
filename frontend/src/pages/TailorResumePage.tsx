@@ -1,12 +1,23 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getSelectedAIModel } from '../utils/aiModel';
+import ResumeComparison from '../components/ResumeComparison';
 import './TailorResumePage.css';
+
+interface ExperienceChange {
+  experienceIndex: number;
+  bulletIndex: number;
+  original: string;
+  tailored: string;
+  reasoning: string;
+  jdQuote: string;
+}
 
 interface TailoredResume {
   id?: number;
   keywords: string[];
   summary: string;
+  summaryReasoning?: string;
   experiences: Array<{
     company: string;
     title: string;
@@ -15,12 +26,14 @@ interface TailoredResume {
     endDate?: string;
     bullets: string[];
   }>;
+  experienceChanges?: ExperienceChange[];
   matchedStories?: number[];
   atsScore?: number;
   profile?: {
     name?: string;
     email?: string;
     phone?: string;
+    summary?: string;
     skills: string[]; // Already parsed array from backend
     experiences?: any[];
     educations?: any[];
@@ -257,6 +270,22 @@ function TailorResumePage() {
                 ))}
               </div>
             </div>
+          )}
+
+          {/* Comparison View */}
+          {tailoredResume.profile && (
+            <ResumeComparison
+              originalProfile={{
+                summary: tailoredResume.profile.summary,
+                experiences: tailoredResume.profile.experiences,
+              }}
+              tailoredResume={{
+                summary: tailoredResume.summary,
+                summaryReasoning: tailoredResume.summaryReasoning,
+                experiences: tailoredResume.experiences,
+                experienceChanges: tailoredResume.experienceChanges,
+              }}
+            />
           )}
 
           <div className="resume-preview">
