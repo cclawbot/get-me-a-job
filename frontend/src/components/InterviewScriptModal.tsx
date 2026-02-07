@@ -46,7 +46,7 @@ function InterviewScriptModal({ onClose, story }: InterviewScriptModalProps) {
         hasStoryId: !!story.id 
       });
       
-      const res = await fetch('http://localhost:3001/api/stories/to-script', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stories/to-script`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

@@ -40,7 +40,7 @@ function StoryBankPage() {
 
   const fetchStories = async () => {
     try {
-      const res = await fetch('http://localhost:3001/api/stories');
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stories`);
       const data = await res.json();
       setStories(data);
     } catch (error) {
@@ -81,8 +81,8 @@ function StoryBankPage() {
 
     try {
       const url = editingId 
-        ? `http://localhost:3001/api/stories/${editingId}`
-        : 'http://localhost:3001/api/stories';
+        ? `${import.meta.env.VITE_API_URL}/api/stories/${editingId}`
+        : `${import.meta.env.VITE_API_URL}/api/stories`;
       
       const method = editingId ? 'PUT' : 'POST';
 
@@ -120,7 +120,7 @@ function StoryBankPage() {
     if (!confirm('Are you sure you want to delete this story?')) return;
 
     try {
-      const res = await fetch(`http://localhost:3001/api/stories/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stories/${id}`, {
         method: 'DELETE',
       });
 
@@ -167,7 +167,7 @@ function StoryBankPage() {
     setOptimizing(true);
     try {
       const model = getSelectedAIModel();
-      const res = await fetch('http://localhost:3001/api/stories/optimize', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stories/optimize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, situation, task, action, result, metrics, model }),

@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import profileRouter from './routes/profile';
 import storiesRouter from './routes/stories';
 import resumesRouter from './routes/resumes';
+import jobsRouter from './routes/jobs';
 
 dotenv.config();
 
@@ -19,18 +20,11 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Backend is running!' });
 });
 
-app.get('/api/jobs', (req, res) => {
-  // Placeholder for job listings
-  res.json([
-    { id: 1, title: 'Frontend Developer', company: 'TechCorp', location: 'Remote' },
-    { id: 2, title: 'Backend Engineer', company: 'StartupXYZ', location: 'San Francisco' },
-  ]);
-});
-
 // Resume tailoring routes
 app.use('/api/profile', profileRouter);
 app.use('/api/stories', storiesRouter);
 app.use('/api/resumes', resumesRouter);
+app.use('/api/jobs', jobsRouter);
 
 // Start server
 app.listen(PORT, () => {

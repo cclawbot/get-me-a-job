@@ -58,7 +58,7 @@ function ProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch('http://localhost:3001/api/profile');
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/profile`);
       const data = await res.json();
       
       setName(data.name || '');
@@ -80,7 +80,7 @@ function ProfilePage() {
   const saveProfile = async () => {
     setSaving(true);
     try {
-      const res = await fetch('http://localhost:3001/api/profile', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/profile`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

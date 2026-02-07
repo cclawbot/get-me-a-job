@@ -17,7 +17,15 @@ model Job {
   location    String
   description String?
   salary      String?
-  url         String?
+  url         String?  @unique
+  source      String   @default("manual") // seek, linkedin, indeed, manual
+  status      String   @default("new")    // new, saved, applied, interviewing, offered, rejected
+  postedDate  String?
+  workType    String?  // full-time, part-time, contract, casual
+  remote      Boolean  @default(false)
+  keywords    String?  // JSON array of matched keywords
+  notes       String?
+  userId      String   @default("default")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getSelectedAIModel } from '../utils/aiModel';
 import ResumeComparison from '../components/ResumeComparison';
 import './TailorResumePage.css';
@@ -35,6 +35,7 @@ interface TailoredResume {
 
 function TailorResumePage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [jobUrl, setJobUrl] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [company, setCompany] = useState('');
@@ -45,6 +46,21 @@ function TailorResumePage() {
   const [error, setError] = useState('');
   const [editMode, setEditMode] = useState(false);
   const [editedResume, setEditedResume] = useState<TailoredResume | null>(null);
+  const [coverLetter, setCoverLetter] = useState<string | null>(null);
+  const [generatingCoverLetter, setGeneratingCoverLetter] = useState(false);
+
+  // Load URL params from Jobs page navigation
+  useEffect(() => {
+    const urlJobTitle = searchParams.get('jobTitle');
+    const urlCompany = searchParams.get('company');
+    const urlDescription = searchParams.get('description');
+    const urlJobUrl = searchParams.get('url');
+    
+    if (urlJobTitle) setJobTitle(urlJobTitle);
+    if (urlCompany) setCompany(urlCompany);
+    if (urlDescription) setJobDescription(urlDescription);
+    if (urlJobUrl) setJobUrl(urlJobUrl);
+  }, [searchParams]);
 
   const handleParseUrl = async () => {
     if (!jobUrl.trim()) {
@@ -57,7 +73,7 @@ function TailorResumePage() {
 
     try {
       const model = getSelectedAIModel();
-      const res = await fetch('http://localhost:3001/api/resumes/parse-url', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/resumes/parse-url`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: jobUrl, model }),
@@ -84,43 +100,71 @@ function TailorResumePage() {
   };
 
   const handleTailor = async () => {
-    if (!jobTitle || !jobDescription) {
-      setError('Please fill in job title and description');
+    if (!jobDescription || !jobTitle) {
+      setError('Job title and description are required');
       return;
     }
 
     setLoading(true);
     setError('');
-    setTailoredResume(null);
 
     try {
-      const res = await fetch('http://localhost:3001/api/resumes/tailor', {
+      const model = getSelectedAIModel();
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/resumes/tailor`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          jobDescription,
           jobTitle,
           company,
-          jobDescription,
+          model,
         }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        if (data.demo) {
-          setError('⚠️ OpenAI API key not configured. Please add your OpenAI API key to backend/.env file to use AI-powered resume tailoring.');
-        } else {
-          setError(data.error || 'Failed to tailor resume');
-        }
-        return;
+        throw new Error(data.error || 'Failed to tailor resume');
       }
 
       setTailoredResume(data);
+      console.log('✅ Resume tailored successfully:', data);
     } catch (err) {
-      console.error('Failed to tailor resume:', err);
-      setError('Failed to connect to backend');
+      console.error('Tailor error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to tailor resume');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateCoverLetter = async () => {
+    if (!jobDescription || !tailoredResume) return;
+
+    setGeneratingCoverLetter(true);
+    setError('');
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/resumes/generate-cover-letter`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jobDescription,
+          tailoredResume,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to generate cover letter');
+      }
+
+      setCoverLetter(data.coverLetter);
+    } catch (err) {
+      console.error('Failed to generate cover letter:', err);
+      setError('Failed to generate cover letter');
+    } finally {
+      setGeneratingCoverLetter(false);
     }
   };
 
@@ -128,7 +172,7 @@ function TailorResumePage() {
     if (!tailoredResume?.id) return;
 
     try {
-      window.open(`http://localhost:3001/api/resumes/${tailoredResume.id}/pdf`, '_blank');
+      window.open(`${import.meta.env.VITE_API_URL}/api/resumes/${tailoredResume.id}/pdf`, '_blank');
     } catch (err) {
       alert('Failed to download PDF');
     }
@@ -153,7 +197,7 @@ function TailorResumePage() {
     if (!editedResume || !editedResume.id) return;
 
     try {
-      const res = await fetch(`http://localhost:3001/api/resumes/${editedResume.id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/resumes/${editedResume.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -326,6 +370,13 @@ function TailorResumePage() {
                   <button onClick={handleEnterEditMode} className="btn-secondary">
                     ✏️ Edit Resume
                   </button>
+                  <button 
+                    onClick={handleGenerateCoverLetter} 
+                    className="btn-secondary"
+                    disabled={generatingCoverLetter}
+                  >
+                    {generatingCoverLetter ? '🤖 Generating...' : '✉️ Cover Letter'}
+                  </button>
                   <button onClick={handleDownloadPDF} className="btn-primary">
                     📄 Download PDF
                   </button>
@@ -495,6 +546,26 @@ function TailorResumePage() {
               </div>
             )}
           </div>
+
+          {coverLetter && (
+            <div className="cover-letter-section" style={{ marginTop: '3rem' }}>
+              <h2>✉️ Generated Cover Letter</h2>
+              <div className="form-card" style={{ whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif', lineHeight: '1.6', padding: '3rem' }}>
+                {coverLetter}
+              </div>
+              <div className="form-actions" style={{ marginTop: '1.5rem' }}>
+                <button 
+                  className="btn-primary"
+                  onClick={() => {
+                    navigator.clipboard.writeText(coverLetter);
+                    alert('✅ Cover letter copied to clipboard!');
+                  }}
+                >
+                  📋 Copy to Clipboard
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

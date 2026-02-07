@@ -23,7 +23,7 @@ function ResumesListPage() {
 
   const fetchResumes = async () => {
     try {
-      const res = await fetch('http://localhost:3001/api/resumes');
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/resumes`);
       const data = await res.json();
       setResumes(data);
     } catch (error) {
@@ -34,7 +34,7 @@ function ResumesListPage() {
   };
 
   const handleDownloadPDF = (id: number, jobTitle: string) => {
-    window.open(`http://localhost:3001/api/resumes/${id}/pdf`, '_blank');
+    window.open(`${import.meta.env.VITE_API_URL}/api/resumes/${id}/pdf`, '_blank');
   };
 
   const handleDeleteClick = (id: number) => {
@@ -44,7 +44,7 @@ function ResumesListPage() {
   const handleDeleteConfirm = async (id: number) => {
     setDeleting(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/resumes/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/resumes/${id}`, {
         method: 'DELETE',
       });
 

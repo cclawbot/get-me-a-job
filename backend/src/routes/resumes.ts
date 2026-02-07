@@ -2,15 +2,16 @@ import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
 import Anthropic from '@anthropic-ai/sdk';
 import puppeteer from 'puppeteer';
-import { parseJobFromURL } from '../services/ai';
+import { parseJobFromURL, generateCoverLetter } from '../services/ai';
 
 const router = Router();
 const prisma = new PrismaClient();
+const ENABLE_AI = process.env.ENABLE_AI_FEATURES === 'true';
 
 // Initialize Anthropic (will be null if API key not set)
 let anthropic: Anthropic | null = null;
 try {
-  if (process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'your_anthropic_api_key_here') {
+  if (ENABLE_AI && process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'your_anthropic_api_key_here') {
     anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   }
 } catch (error) {
@@ -335,6 +336,38 @@ Return ONLY valid JSON, no markdown formatting, no code blocks, no extra text.`;
       error: 'Failed to tailor resume',
       details: error.message 
     });
+  }
+});
+
+// Generate cover letter
+router.post('/generate-cover-letter', async (req, res) => {
+  try {
+    const userId = 'default';
+    const { jobDescription, tailoredResume } = req.body;
+
+    if (!jobDescription || !tailoredResume) {
+      return res.status(400).json({ error: 'Job description and tailored resume content are required' });
+    }
+
+    // Fetch user profile
+    const profile = await prisma.profile.findUnique({
+      where: { userId },
+      include: {
+        experiences: { orderBy: { startDate: 'desc' } },
+        educations: { orderBy: { endDate: 'desc' } },
+        certifications: { orderBy: { date: 'desc' } },
+      },
+    });
+
+    if (!profile) {
+      return res.status(400).json({ error: 'Please create your profile first' });
+    }
+
+    const coverLetter = await generateCoverLetter(profile, jobDescription, tailoredResume);
+    res.json({ coverLetter });
+  } catch (error: any) {
+    console.error('Error generating cover letter:', error);
+    res.status(500).json({ error: 'Failed to generate cover letter', details: error.message });
   }
 });
 

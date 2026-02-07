@@ -1,18 +1,115 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+const ENABLE_AI = process.env.ENABLE_AI_FEATURES === 'true';
+const ENABLE_CLAUDE = process.env.ENABLE_CLAUDE === 'true';
+
 // Model options
 export const MODELS = {
-  SONNET: 'claude-sonnet-4-5',
-  HAIKU: 'claude-haiku-4-5',
+  SONNET: 'claude-sonnet-4-5-20250929',
+  HAIKU: 'claude-haiku-4-5-20251001',
+  SONNET_3_5: 'claude-3-5-sonnet-20241022',
+  HAIKU_3_5: 'claude-3-5-haiku-20241022',
+  GEMINI_FLASH: 'google-gemini-cli/gemini-3-flash-preview',
+  GEMINI_PRO: 'google-gemini-cli/gemini-3-pro-preview',
 } as const;
 
 export type AIModel = typeof MODELS[keyof typeof MODELS];
 
-const DEFAULT_MODEL = MODELS.SONNET;
+function isClaude(model: string): boolean {
+  return model.startsWith('claude-');
+}
+
+const DEFAULT_MODEL = MODELS.GEMINI_FLASH;
+
+// Fallback logic: if a model fails, try these in order
+const FALLBACK_ORDER: AIModel[] = [
+  MODELS.GEMINI_FLASH,
+  MODELS.GEMINI_PRO,
+  MODELS.HAIKU,
+  MODELS.SONNET,
+  MODELS.SONNET_3_5,
+  MODELS.HAIKU_3_5
+].filter(model => ENABLE_CLAUDE || !isClaude(model));
+
+export async function callAI(prompt: string, model: AIModel, isFallback = false): Promise<string> {
+  console.log(`🤖 AI Call Request: model=${model}, isFallback=${isFallback}`);
+  if (!ENABLE_AI) {
+    throw new Error('AI features are disabled by feature flag (ENABLE_AI_FEATURES).');
+  }
+
+  // If Claude is disabled and we're trying to use a Claude model,
+  // either redirect to default or throw if this is already a fallback.
+  if (!ENABLE_CLAUDE && isClaude(model)) {
+    if (isFallback) {
+      throw new Error(`Claude model ${model} requested but Claude is disabled.`);
+    }
+    console.log(`⚠️ Claude is disabled. Redirecting from ${model} to ${DEFAULT_MODEL}`);
+    return await callAI(prompt, DEFAULT_MODEL, true);
+  }
+
+  try {
+    if (isClaude(model)) {
+      console.log(`📡 Sending request to Anthropic (${model})...`);
+      const message = await anthropic.messages.create({
+        model: model,
+        max_tokens: 4096,
+        messages: [{ role: 'user', content: prompt }],
+      });
+
+      const textContent = message.content.find((c) => c.type === 'text');
+      if (!textContent || textContent.type !== 'text') {
+        throw new Error('No text response from AI');
+      }
+      return textContent.text;
+    } else if (model.startsWith('google-gemini-cli/')) {
+      const geminiModel = model.replace('google-gemini-cli/', '');
+      console.log(`📡 Executing Gemini CLI (${geminiModel})...`);
+      const tmpFile = path.join('/tmp', `prompt-${Date.now()}.txt`);
+      try {
+        fs.writeFileSync(tmpFile, prompt);
+        const output = execSync(`gemini --model "${geminiModel}" --output-format text "$(cat ${tmpFile})"`, { 
+          encoding: 'utf8', 
+          maxBuffer: 10 * 1024 * 1024,
+          env: { ...process.env, GOOGLE_GENAI_USE_GCA: 'true' }
+        });
+        console.log(`✅ Gemini CLI responded (${output.length} chars)`);
+        return output;
+      } catch (error) {
+        console.error(`❌ Gemini CLI error (${model}):`, error);
+        throw new Error(`Failed to get response from Gemini CLI (${model})`);
+      } finally {
+        if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile);
+      }
+    }
+  } catch (error) {
+    console.error(`Error calling ${model}:`, error);
+    
+    // If it's not already a fallback call, try the fallback chain
+    if (!isFallback) {
+      console.log('🔄 Attempting fallback chain...');
+      for (const fallbackModel of FALLBACK_ORDER) {
+        if (fallbackModel === model) continue; // Skip if it's the one that just failed
+        
+        try {
+          console.log(`📡 Trying fallback model: ${fallbackModel}`);
+          return await callAI(prompt, fallbackModel, true);
+        } catch (fallbackError) {
+          console.error(`Fallback failed for ${fallbackModel}, trying next...`);
+        }
+      }
+    }
+    throw error; // If all fallbacks fail, or it's a fallback call itself
+  }
+  
+  throw new Error(`Unsupported model: ${model}`);
+}
 
 export interface ParsedResume {
   name: string;
@@ -98,19 +195,9 @@ Important:
 - Preserve bullet point formatting using • or - characters
 - Return ONLY valid JSON, no other text`;
 
-  const message = await anthropic.messages.create({
-    model: model,
-    max_tokens: 4096,
-    messages: [{ role: 'user', content: prompt }],
-  });
+  const responseText = await callAI(prompt, model);
 
-  const textContent = message.content.find((c) => c.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
-    throw new Error('No text response from AI');
-  }
-
-  // Extract JSON from response (might be wrapped in markdown code blocks)
-  let jsonText = textContent.text.trim();
+  let jsonText = responseText.trim();
   const jsonMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
   if (jsonMatch) {
     jsonText = jsonMatch[1];
@@ -160,18 +247,9 @@ Return a JSON object with this structure:
 
 Return ONLY valid JSON, no other text.`;
 
-  const message = await anthropic.messages.create({
-    model: model,
-    max_tokens: 2048,
-    messages: [{ role: 'user', content: prompt }],
-  });
+  const responseText = await callAI(prompt, model);
 
-  const textContent = message.content.find((c) => c.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
-    throw new Error('No text response from AI');
-  }
-
-  let jsonText = textContent.text.trim();
+  let jsonText = responseText.trim();
   const jsonMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
   if (jsonMatch) {
     jsonText = jsonMatch[1];
@@ -224,18 +302,9 @@ Return a JSON object with this structure:
 
 Return ONLY valid JSON, no other text.`;
 
-  const message = await anthropic.messages.create({
-    model: model,
-    max_tokens: 2048,
-    messages: [{ role: 'user', content: prompt }],
-  });
+  const responseText = await callAI(prompt, model);
 
-  const textContent = message.content.find((c) => c.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
-    throw new Error('No text response from AI');
-  }
-
-  let jsonText = textContent.text.trim();
+  let jsonText = responseText.trim();
   const jsonMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
   if (jsonMatch) {
     jsonText = jsonMatch[1];
@@ -285,18 +354,9 @@ Important:
 
 Return ONLY valid JSON, no markdown or other formatting.`;
 
-  const message = await anthropic.messages.create({
-    model: model,
-    max_tokens: 4096,
-    messages: [{ role: 'user', content: prompt }],
-  });
+  const responseText = await callAI(prompt, model);
 
-  const textContent = message.content.find((c) => c.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
-    throw new Error('No text response from AI');
-  }
-
-  let jsonText = textContent.text.trim();
+  let jsonText = responseText.trim();
   const jsonMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
   if (jsonMatch) {
     jsonText = jsonMatch[1];
@@ -354,18 +414,9 @@ Return a JSON object:
 
 Return ONLY valid JSON, no other text.`;
 
-  const message = await anthropic.messages.create({
-    model: model,
-    max_tokens: 2048,
-    messages: [{ role: 'user', content: prompt }],
-  });
+  const responseText = await callAI(prompt, model);
 
-  const textContent = message.content.find((c) => c.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
-    throw new Error('No text response from AI');
-  }
-
-  let jsonText = textContent.text.trim();
+  let jsonText = responseText.trim();
   const jsonMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
   if (jsonMatch) {
     jsonText = jsonMatch[1];
@@ -378,4 +429,49 @@ Return ONLY valid JSON, no other text.`;
     console.error('Failed to parse AI response:', jsonText);
     throw new Error('Failed to generate interview script from AI response');
   }
+}
+
+export async function generateCoverLetter(
+  profile: any,
+  jobDescription: string,
+  tailoredResume: any,
+  model: AIModel = DEFAULT_MODEL
+): Promise<string> {
+  const prompt = `You are an expert career coach. Write a professional, compelling, and highly tailored cover letter based on the user's profile, a specific job description, and the tailored resume we just generated.
+
+CRITICAL WRITING STYLE RULES - AVOID AI SLOP:
+- Write like a real person, not a robot
+- Use natural, conversational language (while staying professional)
+- Be specific and concrete - avoid vague buzzwords
+- NO generic AI phrases like: "I am passionate about", "leverage synergies", "utilize", "spearheaded", "game-changer"
+- NO excessive corporate jargon or buzzwords
+- NO robotic sentence patterns or overly formal language
+- Use simple, clear, powerful words instead of complicated ones
+- Focus on WHAT YOU DID and RESULTS, not fluffy descriptions
+- Make it sound like something a confident human would actually say
+
+Good: "Led 5-person team to redesign checkout flow, reducing cart abandonment by 23%"
+Bad: "Leveraged innovative leadership capabilities to spearhead transformational UX initiatives that optimized conversion metrics"
+
+Job Description:
+${jobDescription}
+
+User Profile:
+${JSON.stringify(profile)}
+
+Tailored Resume Content:
+${JSON.stringify(tailoredResume)}
+
+Requirements:
+- Professional business letter format
+- Strong opening hook
+- Connect specific achievements from the profile/resume to the job requirements
+- Show enthusiasm for the company and role
+- Keep it to 3-4 impactful paragraphs
+- Use a professional but engaging tone
+- Do not use placeholders like "[Company Name]" if the information is available in the JD; if not, use brackets.
+
+Return ONLY the text of the cover letter, no other commentary.`;
+
+  return await callAI(prompt, model);
 }
