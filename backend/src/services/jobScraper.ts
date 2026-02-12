@@ -43,12 +43,25 @@ async function setupPage(browser: Browser): Promise<Page> {
   
   await page.setViewport({ width: 1920, height: 1080 });
   await page.setUserAgent(
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'
   );
+
+  await page.setExtraHTTPHeaders({
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+    'Cache-Control': 'max-age=0',
+  });
   
   // Hide webdriver property
   await page.evaluateOnNewDocument(() => {
+    // @ts-ignore
+    delete navigator.__proto__.webdriver;
+    // @ts-ignore
     Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+    // @ts-ignore
+    window.chrome = { runtime: {} };
+    // @ts-ignore
+    navigator.languages = ['en-US', 'en'];
   });
   
   return page;
@@ -67,7 +80,7 @@ async function parseJobListingsWithAI(
   const prompt = `You are a job listing parser. Extract job listings from the following ${source} search results page.
 
 Page Content:
-${pageContent.substring(0, 20000)}
+${pageContent.substring(0, 30000)}
 
 Extract ALL visible job listings. For each job, provide:
 - title: Job title
@@ -134,10 +147,13 @@ export async function scrapeSeek(params: SearchParams): Promise<ScrapedJob[]> {
     
     console.log(`🔍 Scraping Seek: ${url}`);
     
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
     
     // Wait for job cards to load
-    await page.waitForSelector('[data-testid="job-card"], article, .job-card, [data-automation="jobCard"]', { timeout: 10000 }).catch(() => {});
+    console.log('⏳ Waiting for job cards...');
+    await page.waitForSelector('[data-testid="job-card"], article, .job-card, [data-automation="jobCard"]', { timeout: 30000 }).catch((err) => {
+      console.log('⚠️ Seek: Job cards didn\'t appear within 30s, continuing anyway...');
+    });
     
     // Get page content
     const pageContent = await page.evaluate(() => document.body.innerText);
@@ -225,10 +241,13 @@ export async function scrapeLinkedIn(params: SearchParams): Promise<ScrapedJob[]
     
     console.log(`🔍 Scraping LinkedIn: ${url}`);
     
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
     
     // Wait for job cards
-    await page.waitForSelector('.jobs-search__results-list, .base-search-card, .job-card-container', { timeout: 10000 }).catch(() => {});
+    console.log('⏳ Waiting for LinkedIn job results...');
+    await page.waitForSelector('.jobs-search__results-list, .base-search-card, .job-card-container', { timeout: 30000 }).catch(() => {
+      console.log('⚠️ LinkedIn: Job results didn\'t appear within 30s (possibly hit auth wall)');
+    });
     
     // Scroll to load more jobs
     await page.evaluate(() => window.scrollTo(0, 1000));
@@ -328,10 +347,10 @@ export async function scrapeIndeed(params: SearchParams): Promise<ScrapedJob[]> 
     
     console.log(`🔍 Scraping Indeed: ${url}`);
     
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
     
     // Wait for job cards
-    await page.waitForSelector('.job_seen_beacon, .jobsearch-ResultsList, .result', { timeout: 10000 }).catch(() => {});
+    await page.waitForSelector('.job_seen_beacon, .jobsearch-ResultsList, .result', { timeout: 30000 }).catch(() => {});
     
     // Get page content
     const pageContent = await page.evaluate(() => document.body.innerText);

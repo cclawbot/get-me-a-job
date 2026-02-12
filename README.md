@@ -63,10 +63,33 @@ npm run dev
 
 This project is configured to use the **Gemini CLI** for all AI features (Resume parsing, Job search scraping, STAR story optimization, and Job description fetching).
 
+### Authentication
+
+The Gemini CLI supports multiple ways to authenticate. If you are running this locally, you need to ensure the CLI is authenticated before starting the backend.
+
+#### 1. OAuth (Browser Login)
+The most common way for local development is to run the authentication command:
+```bash
+gemini login
+```
+This will open a browser window for you to log in with your Google account. This is the "popup" behavior you might expect.
+
+#### 2. Service Account / Cloud Authentication
+In environments like **OpenClaw** or **Google Cloud**, the project uses:
+```env
+GOOGLE_GENAI_USE_GCA=true
+```
+This leverages built-in credentials without requiring a manual browser login.
+
+#### 3. API Key (Legacy/Local)
+Alternatively, you can provide an API key in the `backend/.env` file:
+```env
+GEMINI_API_KEY=your_gemini_api_key
+```
+
+### Technical Details
 - **Default Model**: `gemini-3-flash-preview`
-- **Authentication**:
-  - **Local Development**: Set `GEMINI_API_KEY` in your environment.
-  - **OpenClaw/Agent Environment**: The project uses `GOOGLE_GENAI_USE_GCA=true` to leverage built-in cloud authentication.
+- **Fallback Chain**: If the primary model fails, the system automatically tries `gemini-3-pro-preview` and then Claude models (if enabled).
 
 To switch back to Claude, set `ENABLE_CLAUDE=true` and `VITE_ENABLE_CLAUDE=true` and provide an `ANTHROPIC_API_KEY`.
 
