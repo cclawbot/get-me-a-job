@@ -1,30 +1,16 @@
-import Anthropic from '@anthropic-ai/sdk';
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
 const ENABLE_AI = process.env.ENABLE_AI_FEATURES === 'true';
-const ENABLE_CLAUDE = process.env.ENABLE_CLAUDE === 'true';
 
 // Model options
 export const MODELS = {
-  SONNET: 'claude-sonnet-4-5-20250929',
-  HAIKU: 'claude-haiku-4-5-20251001',
-  SONNET_3_5: 'claude-3-5-sonnet-20241022',
-  HAIKU_3_5: 'claude-3-5-haiku-20241022',
   GEMINI_FLASH: 'google-gemini-cli/gemini-3-flash-preview',
   GEMINI_PRO: 'google-gemini-cli/gemini-3-pro-preview',
 } as const;
 
 export type AIModel = typeof MODELS[keyof typeof MODELS];
-
-function isClaude(model: string): boolean {
-  return model.startsWith('claude-');
-}
 
 const DEFAULT_MODEL = MODELS.GEMINI_FLASH;
 
@@ -32,43 +18,16 @@ const DEFAULT_MODEL = MODELS.GEMINI_FLASH;
 const FALLBACK_ORDER: AIModel[] = [
   MODELS.GEMINI_FLASH,
   MODELS.GEMINI_PRO,
-  MODELS.HAIKU,
-  MODELS.SONNET,
-  MODELS.SONNET_3_5,
-  MODELS.HAIKU_3_5
-].filter(model => ENABLE_CLAUDE || !isClaude(model));
+];
 
-export async function callAI(prompt: string, model: AIModel, isFallback = false): Promise<string> {
+export async function callAI(prompt: string, model: string, isFallback = false): Promise<string> {
   console.log(`🤖 AI Call Request: model=${model}, isFallback=${isFallback}`);
   if (!ENABLE_AI) {
     throw new Error('AI features are disabled by feature flag (ENABLE_AI_FEATURES).');
   }
 
-  // If Claude is disabled and we're trying to use a Claude model,
-  // either redirect to default or throw if this is already a fallback.
-  if (!ENABLE_CLAUDE && isClaude(model)) {
-    if (isFallback) {
-      throw new Error(`Claude model ${model} requested but Claude is disabled.`);
-    }
-    console.log(`⚠️ Claude is disabled. Redirecting from ${model} to ${DEFAULT_MODEL}`);
-    return await callAI(prompt, DEFAULT_MODEL, true);
-  }
-
   try {
-    if (isClaude(model)) {
-      console.log(`📡 Sending request to Anthropic (${model})...`);
-      const message = await anthropic.messages.create({
-        model: model,
-        max_tokens: 4096,
-        messages: [{ role: 'user', content: prompt }],
-      });
-
-      const textContent = message.content.find((c) => c.type === 'text');
-      if (!textContent || textContent.type !== 'text') {
-        throw new Error('No text response from AI');
-      }
-      return textContent.text;
-    } else if (model.startsWith('google-gemini-cli/')) {
+    if (model.startsWith('google-gemini-cli/')) {
       const geminiModel = model.replace('google-gemini-cli/', '');
       console.log(`📡 Executing Gemini CLI (${geminiModel})...`);
       const tmpFile = path.join('/tmp', `prompt-${Date.now()}.txt`);

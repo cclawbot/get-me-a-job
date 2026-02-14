@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './Navigation.css';
-import { ENABLE_CLAUDE } from '../utils/aiModel';
 
-export type AIModel = 'claude-sonnet-4-5-20250929' | 'claude-haiku-4-5-20251001' | 'google-gemini-cli/gemini-3-flash-preview' | 'google-gemini-cli/gemini-3-pro-preview';
+export type AIModel = 'google-gemini-cli/gemini-3-flash-preview' | 'google-gemini-cli/gemini-3-pro-preview';
 
 function Navigation() {
   const location = useLocation();
@@ -11,10 +10,6 @@ function Navigation() {
   const [selectedModel, setSelectedModel] = useState<AIModel>(() => {
     const saved = localStorage.getItem('ai-model');
     const model = (saved as AIModel) || 'google-gemini-cli/gemini-3-flash-preview';
-    
-    if (!ENABLE_CLAUDE && model.startsWith('claude-')) {
-      return 'google-gemini-cli/gemini-3-flash-preview';
-    }
     return model;
   });
 
@@ -30,14 +25,10 @@ function Navigation() {
 
   // Toggle AI model
   const handleModelToggle = () => {
-    const allModels: AIModel[] = [
-      'claude-sonnet-4-5-20250929',
-      'claude-haiku-4-5-20251001',
+    const availableModels: AIModel[] = [
       'google-gemini-cli/gemini-3-flash-preview',
       'google-gemini-cli/gemini-3-pro-preview'
     ];
-    
-    const availableModels = allModels.filter(m => ENABLE_CLAUDE || !m.startsWith('claude-'));
     
     const currentIndex = availableModels.indexOf(selectedModel);
     const nextIndex = (currentIndex + 1) % availableModels.length;
@@ -52,8 +43,6 @@ function Navigation() {
 
   const getModelLabel = (model: AIModel) => {
     switch (model) {
-      case 'claude-sonnet-4-5-20250929': return 'Sonnet 4.5';
-      case 'claude-haiku-4-5-20251001': return 'Haiku 4.5';
       case 'google-gemini-cli/gemini-3-flash-preview': return 'G3 Flash';
       case 'google-gemini-cli/gemini-3-pro-preview': return 'G3 Pro';
       default: return '🤖 AI';
@@ -62,8 +51,6 @@ function Navigation() {
 
   const getModelTooltip = (model: AIModel) => {
     switch (model) {
-      case 'claude-sonnet-4-5-20250929': return 'Sonnet 4.5 (Most Powerful)';
-      case 'claude-haiku-4-5-20251001': return 'Haiku 4.5 (Fast & Efficient)';
       case 'google-gemini-cli/gemini-3-flash-preview': return 'Gemini 3 Flash (Lightning Fast)';
       case 'google-gemini-cli/gemini-3-pro-preview': return 'Gemini 3 Pro (Highly Capable)';
       default: return 'Select AI Model';

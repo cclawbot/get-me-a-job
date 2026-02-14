@@ -5,22 +5,23 @@ This MVP allows you to build a profile, create achievement stories using the STA
 
 ## Prerequisites
 - Node.js v25+
-- Anthropic API key (for AI resume tailoring with Claude)
+- Google Gemini CLI installed: `npm install -g @google-gemini-cli/gemini`
+- Google Cloud Authentication (GCA) configured
 
 ## Installation
 Already completed! The project is set up with:
-- Backend: Express + Prisma + Anthropic Claude + Puppeteer (port 3001)
+- Backend: Express + Prisma + Google Gemini + Puppeteer (port 3001)
 - Frontend: React + TypeScript + React Router (port 5173)
 
 ## Configuration
 
-### Anthropic API Key
-✅ **Already configured!** Your Anthropic API key is set in `backend/.env`:
+### Google Cloud Authentication
+✅ **Already configured!** Using the Google Cloud Authentication (GCA) pattern for AI features.
    ```
-   ANTHROPIC_API_KEY=sk-ant-api03-...
+   GOOGLE_GENAI_USE_GCA=true
    ```
 
-The app uses **Claude Sonnet 4.5** for AI-powered resume tailoring.
+The app uses **Google Gemini 3 (Flash/Pro)** for AI-powered resume tailoring.
 
 ## Running the App
 
@@ -118,7 +119,7 @@ The resume tailoring process:
 
 ## Next Steps
 
-1. ✅ **API key configured** - Claude is ready to use!
+1. ✅ **AI configured** - Google Gemini is ready to use!
 2. **Build your profile** - Complete all sections
 3. **Create stories** - Add 5-10 achievement stories with different tags
 4. **Tailor your first resume** - Find a job posting and paste the description
@@ -134,14 +135,14 @@ The resume tailoring process:
 
 ## Security Note
 - Single-user MVP (userId: "default")
-- Anthropic API key stored in .env (never commit to git)
+- Authentication via Google Cloud Authentication (GCA)
 - For production, add authentication and per-user data isolation
 
 ## Tech Stack
-- **Backend:** Express, Prisma, Anthropic Claude, Puppeteer
+- **Backend:** Express, Prisma, Google Gemini 3, Puppeteer
 - **Frontend:** React 19, TypeScript, React Router, Vite
 - **Database:** SQLite (Prisma ORM)
-- **AI:** Claude Sonnet 4.5 (Anthropic)
+- **AI:** Google Gemini 3 (Flash & Pro)
 - **PDF:** Puppeteer
 
 Enjoy building tailored resumes! 🎯

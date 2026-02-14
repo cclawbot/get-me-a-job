@@ -2,7 +2,7 @@
 
 ## Overview
 
-The resume builder now has **Claude Sonnet 4.5** AI integration for powerful automation and assistance!
+The resume builder now has **Google Gemini 3** AI integration for powerful automation and assistance!
 
 ---
 
@@ -122,9 +122,9 @@ Practice Questions:
 ## 🛠️ Technical Stack
 
 **Backend:**
-- **AI Provider:** Anthropic Claude Sonnet 4.5
-- **SDK:** `@anthropic-ai/sdk`
-- **API Key:** Using OpenClaw's Anthropic credentials
+- **AI Provider:** Google Gemini 3 (Flash & Pro)
+- **SDK:** `google-gemini-cli`
+- **Auth:** Google Cloud Authentication (GCA)
 - **Service Module:** `/backend/src/services/ai.ts`
 
 **Frontend:**
@@ -227,4 +227,4 @@ Potential additions:
 
 **Frontend:** http://localhost:5173  
 **Backend:** http://localhost:3001  
-**AI Model:** Claude Sonnet 4.5 (via OpenClaw)
+**AI Model:** Google Gemini 3 (via GCA)

@@ -7,7 +7,7 @@ A modern TypeScript full-stack job search application powered by Gemini.
 - **Frontend**: React 18 + Vite + TypeScript
 - **Backend**: Express.js + TypeScript
 - **Database**: SQLite + Prisma ORM
-- **AI Integration**: Gemini CLI (Primary) / Anthropic SDK (Bypassable)
+- **AI Integration**: Gemini CLI via Google Cloud Authentication (GCA)
 - **Architecture**: Monorepo with npm workspaces
 
 ## Prerequisites
@@ -36,7 +36,6 @@ A modern TypeScript full-stack job search application powered by Gemini.
    PORT=3001
    DATABASE_URL="file:./dev.db"
    ENABLE_AI_FEATURES=true
-   ENABLE_CLAUDE=false
    # For local use:
    GEMINI_API_KEY=your_gemini_api_key
    # For Agent/GCA use:
@@ -46,7 +45,6 @@ A modern TypeScript full-stack job search application powered by Gemini.
    **Frontend (`frontend/.env`)**:
    ```env
    VITE_API_URL=http://localhost:3001
-   VITE_ENABLE_CLAUDE=false
    ```
 
 ## Development
@@ -67,19 +65,19 @@ This project is configured to use the **Gemini CLI** for all AI features (Resume
 
 The Gemini CLI supports multiple ways to authenticate. If you are running this locally, you need to ensure the CLI is authenticated before starting the backend.
 
-#### 1. OAuth (Browser Login)
-The most common way for local development is to run the authentication command:
-```bash
-gemini login
-```
-This will open a browser window for you to log in with your Google account. This is the "popup" behavior you might expect.
-
-#### 2. Service Account / Cloud Authentication
+#### 1. Google Cloud Authentication (Preferred)
 In environments like **OpenClaw** or **Google Cloud**, the project uses:
 ```env
 GOOGLE_GENAI_USE_GCA=true
 ```
-This leverages built-in credentials without requiring a manual browser login.
+This leverages built-in credentials (OAuth GCA pattern) without requiring a manual browser login.
+
+#### 2. OAuth (Browser Login)
+The most common way for local development is to run the authentication command:
+```bash
+gemini login
+```
+This will open a browser window for you to log in with your Google account.
 
 #### 3. API Key (Legacy/Local)
 Alternatively, you can provide an API key in the `backend/.env` file:
@@ -89,9 +87,7 @@ GEMINI_API_KEY=your_gemini_api_key
 
 ### Technical Details
 - **Default Model**: `gemini-3-flash-preview`
-- **Fallback Chain**: If the primary model fails, the system automatically tries `gemini-3-pro-preview` and then Claude models (if enabled).
-
-To switch back to Claude, set `ENABLE_CLAUDE=true` and `VITE_ENABLE_CLAUDE=true` and provide an `ANTHROPIC_API_KEY`.
+- **Fallback Chain**: If the primary model fails, the system automatically tries `gemini-3-pro-preview`.
 
 ## Project Structure
 
@@ -116,5 +112,5 @@ get-me-a-job/
 npm run prisma:studio -w backend
 
 # Create a new migration
-cd backend && npx prisma migrate dev --name <migration_name>
+cd backend && npx prisma migrate dev --name <migration_with_name>
 ```

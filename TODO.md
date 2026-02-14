@@ -10,5 +10,5 @@
 - [ ] **Story-to-Interview Assistant**: Enhance the script generator to provide a "practice mode" where AI asks questions based on your stories.
 
 ## 🧹 Maintenance
-- [ ] **Cleanup**: Remove unused OpenAI dependencies since we've switched to Anthropic.
+- [x] **Cleanup**: Remove unused Anthropic dependencies since we've switched to Google Gemini 3.
 - [ ] **Database Migration**: Ensure production-ready migration script if moving away from local SQLite.

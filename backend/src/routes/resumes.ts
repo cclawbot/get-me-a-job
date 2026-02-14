@@ -1,22 +1,11 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
-import Anthropic from '@anthropic-ai/sdk';
 import puppeteer from 'puppeteer';
-import { parseJobFromURL, generateCoverLetter } from '../services/ai';
+import { parseJobFromURL, generateCoverLetter, callAI } from '../services/ai';
 
 const router = Router();
 const prisma = new PrismaClient();
 const ENABLE_AI = process.env.ENABLE_AI_FEATURES === 'true';
-
-// Initialize Anthropic (will be null if API key not set)
-let anthropic: Anthropic | null = null;
-try {
-  if (ENABLE_AI && process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'your_anthropic_api_key_here') {
-    anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  }
-} catch (error) {
-  console.error('Failed to initialize Anthropic:', error);
-}
 
 // Get all tailored resumes
 router.get('/', async (req, res) => {
@@ -137,18 +126,10 @@ router.patch('/:id', async (req, res) => {
 router.post('/tailor', async (req, res) => {
   try {
     const userId = 'default';
-    const { jobDescription, jobTitle, company } = req.body;
+    const { jobDescription, jobTitle, company, model } = req.body;
 
     if (!jobDescription || !jobTitle) {
       return res.status(400).json({ error: 'Job description and title are required' });
-    }
-
-    // Check if Anthropic is configured
-    if (!anthropic) {
-      return res.status(400).json({ 
-        error: 'Anthropic API key not configured. Please set ANTHROPIC_API_KEY in backend/.env file',
-        demo: true 
-      });
     }
 
     // Fetch user profile and stories
@@ -170,7 +151,7 @@ router.post('/tailor', async (req, res) => {
       return res.status(400).json({ error: 'Please create your profile first' });
     }
 
-    // Build context for OpenAI
+    // Build context for AI
     const profileContext = {
       name: profile.name,
       email: profile.email,
@@ -192,7 +173,7 @@ router.post('/tailor', async (req, res) => {
       metrics: s.metrics,
     }));
 
-    // Call Claude to analyze JD and tailor resume
+    // Call AI to analyze JD and tailor resume
     const prompt = `You are an expert resume writer and ATS optimization specialist. Your task is to:
 1. Analyze the job description to extract key requirements, skills, and keywords
 2. Match the candidate's experience and stories to the job requirements
@@ -255,19 +236,10 @@ IMPORTANT FOR REASONING:
 
 Return ONLY valid JSON, no markdown formatting, no code blocks, no extra text.`;
 
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 4096,
-      messages: [{ role: 'user', content: prompt }],
-    });
-
-    const textContent = message.content.find((c) => c.type === 'text');
-    if (!textContent || textContent.type !== 'text') {
-      throw new Error('No text response from Claude');
-    }
+    const responseText = await callAI(prompt, model || 'google-gemini-cli/gemini-3-flash-preview');
 
     // Extract JSON from response (might be wrapped in markdown code blocks)
-    let jsonText = textContent.text.trim();
+    let jsonText = responseText.trim();
     
     console.log('🔍 Raw AI response (first 200 chars):', jsonText.substring(0, 200));
     

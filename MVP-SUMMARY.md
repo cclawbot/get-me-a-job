@@ -26,7 +26,7 @@ A fully functional AI-powered resume tailoring web application that allows users
 
 ---
 
-## 🔌 Backend API (Express + Anthropic Claude + Puppeteer)
+## 🔌 Backend API (Express + Google Gemini + Puppeteer)
 
 ### Routes Implemented:
 
@@ -42,7 +42,7 @@ A fully functional AI-powered resume tailoring web application that allows users
 
 #### Resume Tailoring
 - `POST /api/resumes/tailor` - **AI-powered resume tailoring**
-  - Analyzes job description using Claude Sonnet 4.5
+  - Analyzes job description using Google Gemini 3
   - Extracts keywords and requirements
   - Matches user stories to job needs
   - Generates optimized resume bullets
@@ -53,7 +53,7 @@ A fully functional AI-powered resume tailoring web application that allows users
 - `GET /api/resumes/:id/pdf` - **Export resume as professional PDF**
 
 ### Dependencies Added:
-- ✅ `@anthropic-ai/sdk` - Claude Sonnet 4.5 integration for AI tailoring
+- ✅ `google-gemini-cli` - Gemini 3 integration for AI tailoring
 - ✅ `puppeteer` - PDF generation with clean formatting
 
 ---
@@ -104,7 +104,7 @@ A fully functional AI-powered resume tailoring web application that allows users
 - Keyword extraction visualization
 - Professional resume preview
 - PDF download button
-- Error handling for missing API key
+- Error handling for missing configuration
 
 **UI Elements:**
 - Large textarea for JD input
@@ -140,7 +140,7 @@ A fully functional AI-powered resume tailoring web application that allows users
 ### Resume Tailoring Process:
 
 1. **Job Description Analysis**
-   - Claude Sonnet 4.5 parses JD text
+   - Google Gemini 3 parses JD text
    - Extracts required skills, keywords, qualifications
    - Identifies key themes and requirements
 
@@ -220,10 +220,10 @@ A fully functional AI-powered resume tailoring web application that allows users
 - JSON storage for flexible fields (skills, tags, keywords)
 
 ### ✅ AI Integration
-- Anthropic Claude Sonnet 4.5 integration
+- Google Gemini 3 (Flash & Pro) integration
 - Structured JSON responses
-- Error handling for API failures
-- Graceful degradation without API key
+- Error handling for configuration issues
+- Graceful degradation without configuration
 
 ### ✅ Export Functionality
 - High-quality PDF generation
@@ -248,7 +248,7 @@ get-me-a-job/
 │   │       ├── profile.ts         ✅ Profile CRUD
 │   │       ├── stories.ts         ✅ Story CRUD
 │   │       └── resumes.ts         ✅ AI tailor + PDF
-│   ├── .env                       ✅ Anthropic key configured
+│   ├── .env                       ✅ Google GCA configured
 │   └── package.json               ✅ Dependencies installed
 ├── frontend/
 │   ├── src/
@@ -279,9 +279,9 @@ get-me-a-job/
 
 ### ✅ Fully Configured
 **AI tailoring ready to use:**
-- Anthropic API key configured in `backend/.env`
-- Using Claude Sonnet 4.5 for resume tailoring
-- Backend server running with Claude integration
+- Google GCA pattern implemented
+- Using Google Gemini 3 for resume tailoring
+- Backend server running with Gemini integration
 - All features functional
 
 ---
@@ -319,7 +319,7 @@ get-me-a-job/
 ### Quick Start:
 1. ✅ **Build Profile** - Complete all sections (5-10 min)
 2. ✅ **Add Stories** - Create 5-10 achievement stories with STAR method
-3. ✅ **Claude Configured** - API key already set up!
+3. ✅ **Gemini Configured** - Using Google Gemini 3!
 4. ✅ **Tailor Resume** - Paste a job description and generate
 5. ✅ **Download PDF** - Export professional resume
 
@@ -336,7 +336,7 @@ get-me-a-job/
 
 ### Security Considerations:
 - ✅ CORS configured for local development
-- ✅ Anthropic API key in .env (gitignored)
+- ✅ Authentication via Google GCA
 - ✅ Input validation on backend
 - ⚠️ Single-user MVP (no authentication)
 - 📝 For production: Add auth, multi-user support
@@ -364,7 +364,7 @@ get-me-a-job/
 - prisma - Database migrations
 - cors - Cross-origin requests
 - dotenv - Environment variables
-- **@anthropic-ai/sdk** - Claude Sonnet 4.5 AI integration ✨
+- **google-gemini-cli** - Gemini 3 AI integration ✨
 - **puppeteer** - PDF generation ✨
 
 ### Frontend:
@@ -384,7 +384,7 @@ get-me-a-job/
 - [x] TailoredResume with JD reference and content
 
 ### Backend ✅
-- [x] OpenAI API integration
+- [x] Google Gemini 3 integration
 - [x] POST /api/profile (create/update)
 - [x] POST /api/stories (add to bank)
 - [x] POST /api/tailor-resume (JD → tailored resume)
@@ -415,7 +415,7 @@ get-me-a-job/
 The MVP is **fully functional** and **production-ready** for single-user use!
 
 **You're All Set:**
-1. ✅ Claude API configured and ready
+1. ✅ Google Gemini 3 configured and ready
 2. ✅ Build your profile and story bank
 3. ✅ Start tailoring resumes for job applications!
 
@@ -430,6 +430,6 @@ The MVP is **fully functional** and **production-ready** for single-user use!
 ---
 
 **Built:** February 3, 2026
-**Updated:** February 4, 2026 (Switched to Claude Sonnet 4.5)
+**Updated:** February 14, 2026 (Switched to Google Gemini 3 via GCA)
 **Status:** ✅ Complete and Running
-**Tech Stack:** React 19 + Express + Prisma + Anthropic Claude + Puppeteer
+**Tech Stack:** React 19 + Express + Prisma + Google Gemini 3 + Puppeteer

@@ -106,7 +106,7 @@ Return a JSON array of jobs:
 
 Return ONLY valid JSON array, no other text. If no jobs found, return [].`;
 
-  const jsonTextRaw = await callAI(prompt, MODELS.HAIKU);
+  const jsonTextRaw = await callAI(prompt, MODELS.GEMINI_FLASH);
 
   let jsonText = jsonTextRaw.trim();
   const jsonMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
