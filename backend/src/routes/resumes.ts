@@ -483,16 +483,23 @@ function generateResumeHTML(profile: any, content: any, skills: string[]): strin
     .experience-item li {
       margin-bottom: 3px;
     }
-    .skills-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
+    .skills-section {
+      margin-bottom: 15px;
     }
-    .skill-tag {
-      background: #ecf0f1;
-      padding: 4px 10px;
-      border-radius: 3px;
-      font-size: 10pt;
+    .skill-item {
+      margin-bottom: 4px;
+      display: flex;
+      align-items: flex-start;
+      text-align: justify;
+    }
+    .skill-item::before {
+      content: "•";
+      margin-right: 8px;
+      color: #2c3e50;
+      flex-shrink: 0;
+    }
+    .skill-category {
+      font-weight: bold;
     }
     .education-item {
       margin-bottom: 10px;
@@ -521,8 +528,18 @@ function generateResumeHTML(profile: any, content: any, skills: string[]): strin
   ${skills.length > 0 ? `
   <div class="section">
     <div class="section-title">Skills</div>
-    <div class="skills-list">
-      ${skills.map((skill: string) => `<span class="skill-tag">${skill}</span>`).join('')}
+    <div class="skills-section">
+      ${skills.map((skill: string) => {
+        // Remove existing bullet points if any
+        const cleanSkill = skill.replace(/^[•\s*-]+/, '').trim();
+        const parts = cleanSkill.split(':');
+        if (parts.length > 1) {
+          const category = parts[0].trim();
+          const rest = parts.slice(1).join(':').trim();
+          return `<div class="skill-item"><span class="skill-category">${category}:</span> ${rest}</div>`;
+        }
+        return `<div class="skill-item">${cleanSkill}</div>`;
+      }).join('')}
     </div>
   </div>
   ` : ''}

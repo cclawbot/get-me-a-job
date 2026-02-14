@@ -209,18 +209,29 @@
   color: #34495e;
 }
 
-.skills-list {
+.skills-vertical-list {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.skill-badge {
-  background: #ecf0f1;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
+.skill-item {
+  display: flex;
+  align-items: flex-start;
+  line-height: 1.5;
+  color: #34495e;
+}
+
+.skill-item::before {
+  content: "•";
+  margin-right: 0.75rem;
   color: #2c3e50;
+  flex-shrink: 0;
+}
+
+.skill-category {
+  font-weight: bold;
+  margin-right: 0.25rem;
 }
 
 .experience-block {
@@ -376,11 +387,11 @@
     white-space: normal;
   }
   
-  .skills-list {
+  .skills-vertical-list {
     gap: 0.5rem;
   }
   
-  .skill-badge {
+  .skill-item {
     padding: 0.4rem 0.8rem;
     font-size: 0.85rem;
   }

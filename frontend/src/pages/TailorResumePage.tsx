@@ -459,10 +459,25 @@ function TailorResumePage() {
             {displayResume?.profile?.skills && Array.isArray(displayResume.profile.skills) && displayResume.profile.skills.length > 0 && (
               <div className="resume-section">
                 <h2>Skills</h2>
-                <div className="skills-list">
-                  {displayResume.profile.skills.map((skill: string, i: number) => (
-                    <span key={i} className="skill-badge">{skill}</span>
-                  ))}
+                <div className="skills-vertical-list">
+                  {displayResume.profile.skills.map((skill: string, i: number) => {
+                    const cleanSkill = skill.replace(/^[•\s*-]+/, '').trim();
+                    const parts = cleanSkill.split(':');
+                    if (parts.length > 1) {
+                      const category = parts[0].trim();
+                      const rest = parts.slice(1).join(':').trim();
+                      return (
+                        <div key={i} className="skill-item">
+                          <span className="skill-category">{category}:</span> {rest}
+                        </div>
+                      );
+                    }
+                    return (
+                      <div key={i} className="skill-item">
+                        {cleanSkill}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
