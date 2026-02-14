@@ -52,7 +52,7 @@ async function humanScroll(page: Page) {
 }
 
 // Helper to create a stealth browser
-async function createBrowser(): Promise<Browser> {
+export async function createBrowser(): Promise<Browser> {
   // @ts-ignore - puppeteer-extra launch type mismatch with puppeteer Browser
   return puppeteer.launch({
     headless: true, // LinkedIn/Indeed often flag 'shell' headless, but stealth helps
@@ -66,7 +66,7 @@ async function createBrowser(): Promise<Browser> {
 }
 
 // Helper to set up a stealth page
-async function setupPage(browser: Browser): Promise<Page> {
+export async function setupPage(browser: Browser): Promise<Page> {
   const page = await browser.newPage();
   
   await page.setViewport({ width: 1920, height: 1080 });
@@ -103,9 +103,9 @@ async function parseJobListingsWithAI(
   const prompt = `You are a job listing parser. Extract job listings from the following ${source} search results page.
 
 Page Content:
-${pageContent.substring(0, 30000)}
+${pageContent.substring(0, 15000)}
 
-Extract ALL visible job listings. For each job, provide:
+Extract up to 10 visible job listings. For each job, provide:
 - title: Job title
 - company: Company name
 - location: Location/city
@@ -148,6 +148,7 @@ Return ONLY valid JSON array, no other text. If no jobs found, return [].`;
     return JSON.parse(jsonText);
   } catch (error) {
     console.error('Failed to parse AI response:', error);
+    console.log('Raw JSON text attempted:', jsonText);
     return [];
   }
 }

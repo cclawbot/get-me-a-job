@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+import { execSync, spawnSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
@@ -30,23 +30,49 @@ export async function callAI(prompt: string, model: string, isFallback = false):
     if (model.startsWith('google-gemini-cli/')) {
       const geminiModel = model.replace('google-gemini-cli/', '');
       console.log(`📡 Executing Gemini CLI (${geminiModel})...`);
-      const tmpFile = path.join('/tmp', `prompt-${Date.now()}.txt`);
+      
       try {
-        fs.writeFileSync(tmpFile, prompt);
-        const output = execSync(`gemini --model "${geminiModel}" --output-format text "$(cat ${tmpFile})"`, { 
+        console.log(`📡 Sending prompt to Gemini CLI (${prompt.length} chars)...`);
+        
+        const result = spawnSync('gemini', [
+          '--model', geminiModel,
+          '--output-format', 'text',
+          '-p', ''
+        ], { 
           encoding: 'utf8', 
           maxBuffer: 10 * 1024 * 1024,
+          input: prompt,
           env: { ...process.env, GOOGLE_GENAI_USE_GCA: 'true' }
         });
+
+        if (result.error) {
+          throw result.error;
+        }
+
+        const output = (result.stdout || '').toString();
+        const stderr = (result.stderr || '').toString();
+
+        if (result.status !== 0) {
+          console.error(`❌ Gemini CLI exited with status ${result.status}`);
+          console.error(`Stderr: ${stderr}`);
+          throw new Error(`Gemini CLI failed with status ${result.status}`);
+        }
+
         console.log(`✅ Gemini CLI responded (${output.length} chars)`);
+        if (output.length > 0) {
+          const preview = output.length > 200 
+            ? `${output.substring(0, 100).replace(/\n/g, ' ')}...${output.substring(output.length - 100).replace(/\n/g, ' ')}`
+            : output.replace(/\n/g, ' ');
+          console.log(`   Preview: ${preview}`);
+        }
         return output;
       } catch (error) {
         console.error(`❌ Gemini CLI error (${model}):`, error);
         throw new Error(`Failed to get response from Gemini CLI (${model})`);
-      } finally {
-        if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile);
       }
     }
+    
+    throw new Error(`Unsupported model: ${model}`);
   } catch (error) {
     console.error(`Error calling ${model}:`, error);
     
@@ -66,8 +92,6 @@ export async function callAI(prompt: string, model: string, isFallback = false):
     }
     throw error; // If all fallbacks fail, or it's a fallback call itself
   }
-  
-  throw new Error(`Unsupported model: ${model}`);
 }
 
 export interface ParsedResume {
