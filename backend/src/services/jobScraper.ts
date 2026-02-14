@@ -1,5 +1,10 @@
-import puppeteer, { Browser, Page } from 'puppeteer';
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import { Browser, Page } from 'puppeteer';
 import { callAI, MODELS } from './ai';
+
+// Initialize stealth plugin
+puppeteer.use(StealthPlugin());
 
 const ENABLE_AI = process.env.ENABLE_AI_FEATURES === 'true';
 
@@ -23,16 +28,39 @@ export interface SearchParams {
   maxResults?: number;
 }
 
+// Helper for random delay (jitter)
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms + Math.random() * 1000));
+
+// Human-like scrolling
+async function humanScroll(page: Page) {
+  await page.evaluate(async () => {
+    await new Promise<void>((resolve) => {
+      let totalHeight = 0;
+      const distance = 100;
+      const timer = setInterval(() => {
+        const scrollHeight = document.body.scrollHeight;
+        window.scrollBy(0, distance);
+        totalHeight += distance;
+
+        if (totalHeight >= scrollHeight || totalHeight > 3000) {
+          clearInterval(timer);
+          resolve();
+        }
+      }, 100 + Math.random() * 200);
+    });
+  });
+}
+
 // Helper to create a stealth browser
 async function createBrowser(): Promise<Browser> {
+  // @ts-ignore - puppeteer-extra launch type mismatch with puppeteer Browser
   return puppeteer.launch({
-    headless: true,
+    headless: true, // LinkedIn/Indeed often flag 'shell' headless, but stealth helps
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-blink-features=AutomationControlled',
-      '--disable-web-security',
-      '--disable-features=IsolateOrigins,site-per-process',
+      '--window-size=1920,1080',
     ],
   });
 }
@@ -42,26 +70,21 @@ async function setupPage(browser: Browser): Promise<Page> {
   const page = await browser.newPage();
   
   await page.setViewport({ width: 1920, height: 1080 });
+  
+  // Randomized User-Agent from a modern pool would be better, but this is a solid start
   await page.setUserAgent(
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
   );
 
   await page.setExtraHTTPHeaders({
     'Accept-Language': 'en-US,en;q=0.9',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
     'Cache-Control': 'max-age=0',
-  });
-  
-  // Hide webdriver property
-  await page.evaluateOnNewDocument(() => {
-    // @ts-ignore
-    delete navigator.__proto__.webdriver;
-    // @ts-ignore
-    Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-    // @ts-ignore
-    window.chrome = { runtime: {} };
-    // @ts-ignore
-    navigator.languages = ['en-US', 'en'];
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'none',
+    'Sec-Fetch-User': '?1',
+    'Upgrade-Insecure-Requests': '1',
   });
   
   return page;
@@ -147,7 +170,15 @@ export async function scrapeSeek(params: SearchParams): Promise<ScrapedJob[]> {
     
     console.log(`🔍 Scraping Seek: ${url}`);
     
+    await delay(1000);
+    
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    
+    await delay(2000);
+    
+    // Human-like scrolling
+    console.log('⏳ Performing human-like scrolling...');
+    await humanScroll(page);
     
     // Wait for job cards to load
     console.log('⏳ Waiting for job cards...');
@@ -241,7 +272,17 @@ export async function scrapeLinkedIn(params: SearchParams): Promise<ScrapedJob[]
     
     console.log(`🔍 Scraping LinkedIn: ${url}`);
     
+    // Add random delay before navigation
+    await delay(2000);
+    
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    
+    // Wait for a bit after load
+    await delay(3000);
+    
+    // Human-like scrolling to trigger lazy loading and look real
+    console.log('⏳ Performing human-like scrolling...');
+    await humanScroll(page);
     
     // Wait for job cards
     console.log('⏳ Waiting for LinkedIn job results...');
@@ -249,9 +290,8 @@ export async function scrapeLinkedIn(params: SearchParams): Promise<ScrapedJob[]
       console.log('⚠️ LinkedIn: Job results didn\'t appear within 30s (possibly hit auth wall)');
     });
     
-    // Scroll to load more jobs
-    await page.evaluate(() => window.scrollTo(0, 1000));
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Final small delay before extraction
+    await delay(1500);
     
     // Get page content
     const pageContent = await page.evaluate(() => document.body.innerText);
@@ -347,10 +387,23 @@ export async function scrapeIndeed(params: SearchParams): Promise<ScrapedJob[]> 
     
     console.log(`🔍 Scraping Indeed: ${url}`);
     
+    // Random delay before navigation
+    await delay(1500);
+    
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    
+    // Wait for a bit
+    await delay(2500);
+    
+    // Human-like scrolling
+    console.log('⏳ Performing human-like scrolling...');
+    await humanScroll(page);
     
     // Wait for job cards
     await page.waitForSelector('.job_seen_beacon, .jobsearch-ResultsList, .result', { timeout: 30000 }).catch(() => {});
+    
+    // Final delay
+    await delay(1000);
     
     // Get page content
     const pageContent = await page.evaluate(() => document.body.innerText);
@@ -466,7 +519,15 @@ export async function fetchJobDescription(url: string): Promise<string> {
   
   try {
     const page = await setupPage(browser);
+    
+    // Add a small delay before fetching description
+    await delay(1000 + Math.random() * 2000);
+    
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    
+    // Scroll a bit to look real
+    await page.evaluate(() => window.scrollBy(0, 500));
+    await delay(1000);
     
     const content = await page.evaluate(() => document.body.innerText);
     return content;

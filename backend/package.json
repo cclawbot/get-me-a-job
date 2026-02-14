@@ -17,7 +17,9 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "openai": "^6.17.0",
-    "puppeteer": "^24.36.1"
+    "puppeteer": "^24.36.1",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
