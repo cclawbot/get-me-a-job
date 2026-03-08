@@ -64,6 +64,9 @@ export default function JobsPage() {
   
   // Expanded job for details
   const [expandedJobId, setExpandedJobId] = useState<number | null>(null);
+  
+  // Cleanup modal
+  const [showCleanupModal, setShowCleanupModal] = useState(false);
 
   useEffect(() => {
     fetchJobs();
@@ -227,10 +230,11 @@ export default function JobsPage() {
   };
 
   const handleCleanup = async () => {
-    if (!confirm('Are you sure you want to delete ALL jobs with status "New" or "Rejected"? This cannot be undone.')) {
-      return;
-    }
+    setShowCleanupModal(true);
+  };
 
+  const confirmCleanup = async () => {
+    setShowCleanupModal(false);
     try {
       setLoading(true);
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/jobs/cleanup`, {
@@ -516,6 +520,25 @@ export default function JobsPage() {
           ))
         )}
       </div>
+      
+      {/* Cleanup Confirmation Modal */}
+      {showCleanupModal && (
+        <div className="modal-overlay" onClick={() => setShowCleanupModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>🧹 Confirm Cleanup</h3>
+            <p>Are you sure you want to delete ALL jobs with status <strong>"New"</strong> or <strong>"Rejected"</strong>?</p>
+            <p className="warning">This action cannot be undone.</p>
+            <div className="modal-actions">
+              <button className="cancel-btn" onClick={() => setShowCleanupModal(false)}>
+                Cancel
+              </button>
+              <button className="confirm-btn" onClick={confirmCleanup}>
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
